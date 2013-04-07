@@ -125,6 +125,14 @@ namespace Rock.Data
         /// The categories.
         /// </value>
         public DbSet<Category> Categories { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Dashboards.
+        /// </summary>
+        /// <value>
+        /// the Dashboards.
+        /// </value>
+        public DbSet<Dashboard> Dashboards { get; set; }
         
         /// <summary>
         /// Gets or sets the data views.
@@ -651,6 +659,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new BlockTypeConfiguration() );
             modelBuilder.Configurations.Add( new CampusConfiguration() );
             modelBuilder.Configurations.Add( new CategoryConfiguration() );
+            modelBuilder.Configurations.Add( new DashboardConfiguration() );
             modelBuilder.Configurations.Add( new DataViewConfiguration() );
             modelBuilder.Configurations.Add( new DataViewFilterConfiguration() );
             modelBuilder.Configurations.Add( new DefinedTypeConfiguration() );

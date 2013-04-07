@@ -23,6 +23,7 @@
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.common.min.css") %>">
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.bootstrap.min.css") %>"/>
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/jquery.gridster.min.css") %>" />
 
     <script src="<%# ResolveUrl("~/Scripts/jquery.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.10.0.custom.min.js") %>" ></script>
@@ -35,6 +36,7 @@
     <script src="<%# ResolveUrl("~/Scripts/Rock/validation.js") %>" ></script>
     <script src="<%# ResolveUrl("~/scripts/ckeditor/ckeditor.js") %>" ></script>
     <script src="<%# ResolveUrl("~/scripts/ckeditor/adapters/jquery.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/jquery.gridster.js") %>" ></script>
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 

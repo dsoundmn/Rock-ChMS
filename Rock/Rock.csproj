@@ -613,6 +613,10 @@
     <Compile Include="Migrations\201303120513496_AddDeviceBlocks.Designer.cs">
       <DependentUpon>201303120513496_AddDeviceBlocks.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201303271821365_AddDashboard.cs" />
+    <Compile Include="Migrations\201303271821365_AddDashboard.Designer.cs">
+      <DependentUpon>201303271821365_AddDashboard.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Migrations\RockMigration_3.cs" />
     <Compile Include="Migrations\RockMigration_2.cs">
@@ -633,6 +637,7 @@
     <Compile Include="Model\CodeGenerated\BinaryFileTypeService.cs" />
     <Compile Include="Model\CodeGenerated\BlockService.cs" />
     <Compile Include="Model\CodeGenerated\BlockTypeService.cs" />
+    <Compile Include="Model\CodeGenerated\DashboardService.cs" />
     <Compile Include="Model\CodeGenerated\DataViewFilterService.cs" />
     <Compile Include="Model\CodeGenerated\DataViewService.cs" />
     <Compile Include="Model\CodeGenerated\DeviceService.cs" />
@@ -662,6 +667,7 @@
     <Compile Include="Model\AttendanceCodeService.Partial.cs" />
     <Compile Include="Model\AttendanceService.Partial.cs" />
     <Compile Include="Model\BinaryFileType.cs" />
+    <Compile Include="Model\Dashboard.cs" />
     <Compile Include="Model\DeviceService.Partial.cs" />
     <Compile Include="Model\DataViewService.Partial.cs" />
     <Compile Include="Model\PrayerRequestService.partial.cs" />
@@ -1451,6 +1457,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201303120513496_AddDeviceBlocks.resx">
       <DependentUpon>201303120513496_AddDeviceBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201303271821365_AddDashboard.resx">
+      <DependentUpon>201303271821365_AddDashboard.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
