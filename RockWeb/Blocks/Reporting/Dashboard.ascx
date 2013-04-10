@@ -1,5 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Dashboard.ascx.cs" Inherits="RockWeb.Blocks.Reporting.Dashboard" %>
-
+    
 <asp:UpdatePanel ID="upDashboard" runat="server">
     <ContentTemplate>
         <span id="jqWidth">0</span>
@@ -21,34 +21,6 @@
  
                     <li class="widget" data-row="1" data-col="5" data-sizex="1" data-sizey="1"></li>
                     <li class="widget" data-row="3" data-col="5" data-sizex="1" data-sizey="1"></li>--%>
-
-                    <!-- Possible sizes -->
-<%--                    <li class="widget" data-row="1" data-col="1" data-sizex="1" data-sizey="1">1</li>
-                    <li class="widget" data-row="2" data-col="1" data-sizex="2" data-sizey="1">2</li>
-                    <li class="widget" data-row="3" data-col="1" data-sizex="3" data-sizey="1">3</li>
-                    <li class="widget" data-row="4" data-col="1" data-sizex="4" data-sizey="1">4</li>
-                    <li class="widget" data-row="5" data-col="1" data-sizex="5" data-sizey="1">5</li>--%>
-<%--                    <li class="widget" data-row="1" data-col="1" data-sizex="1" data-sizey="2">6</li>
-                    <li class="widget" data-row="3" data-col="1" data-sizex="2" data-sizey="2">7</li>
-                    <li class="widget" data-row="5" data-col="1" data-sizex="3" data-sizey="2">8</li>
-                    <li class="widget" data-row="7" data-col="1" data-sizex="4" data-sizey="2">9</li>
-                    <li class="widget" data-row="9" data-col="1" data-sizex="5" data-sizey="2">10</li>--%>
-<%--                    <li class="widget" data-row="1" data-col="1" data-sizex="1" data-sizey="3">11</li>
-                    <li class="widget" data-row="4" data-col="1" data-sizex="2" data-sizey="3">12</li>
-                    <li class="widget" data-row="7" data-col="1" data-sizex="3" data-sizey="3">13</li>
-                    <li class="widget" data-row="10" data-col="1" data-sizex="4" data-sizey="3">14</li>
-                    <li class="widget" data-row="13" data-col="1" data-sizex="5" data-sizey="3">15</li>--%>
-<%--                    <li class="widget" data-row="1" data-col="1" data-sizex="1" data-sizey="4">16</li>
-                    <li class="widget" data-row="5" data-col="1" data-sizex="2" data-sizey="4">17</li>
-                    <li class="widget" data-row="9" data-col="1" data-sizex="3" data-sizey="4">18</li>
-                    <li class="widget" data-row="13" data-col="1" data-sizex="4" data-sizey="4">19</li>
-                    <li class="widget" data-row="17" data-col="1" data-sizex="5" data-sizey="4">20</li>--%>
-<%--                    <li class="widget" data-row="1" data-col="1" data-sizex="1" data-sizey="5">21</li>
-                    <li class="widget" data-row="6" data-col="1" data-sizex="2" data-sizey="5">22</li>
-                    <li class="widget" data-row="11" data-col="1" data-sizex="3" data-sizey="5">23</li>
-                    <li class="widget" data-row="16" data-col="1" data-sizex="4" data-sizey="5">24</li>
-                    <li class="widget" data-row="21" data-col="1" data-sizex="5" data-sizey="5">25</li>--%>
-
 
                     <li class="widget" data-row="1" data-col="1" data-sizex="1" data-sizey="1">1</li>
                     <li class="widget" data-row="2" data-col="1" data-sizex="1" data-sizey="1">2</li>

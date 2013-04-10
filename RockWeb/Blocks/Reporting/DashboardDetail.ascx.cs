@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
@@ -16,6 +17,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using System.Collections;
+using System.Xml;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -24,8 +27,6 @@ namespace RockWeb.Blocks.Reporting
     {
         #region Control Methods
 
-        public enum GridSizes { 1x1, 1x2, 1x3, 1x4, 2x1, 2x2, 2x3, 2x4, 3x1, 3x2, 3x3, 3x4, 4x1, 4x2, 4x3, 4x4 };
-
         //protected void Page_Load( object sender, EventArgs e )
         //{
         //}
@@ -33,7 +34,28 @@ namespace RockWeb.Blocks.Reporting
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            pnlDetails.Visible = true;
+            pnlDashboardGridBlockEditor.Visible = true;
+
+            //setup the data in the drop downs
+            MetricService metricService = new MetricService();
+            var items2 = metricService.Queryable().OrderBy( a => a.Title ).Select( a => a.Title ).Distinct().ToList();
+            foreach ( var item in items2 )
+            {
+                if ( !string.IsNullOrWhiteSpace( item ) )
+                {
+                    ddlGridBlockMetric.Items.Add( item );
+                }
+            }
+
+            DefinedValueService valueService = new DefinedValueService();
+            var items = valueService.Queryable().Where( a => a.DefinedTypeId == 19 ).OrderBy( a => a.Name ).Select( a => a.Name ).Distinct().ToList();
+            foreach ( var item in items )
+            {
+                if ( !string.IsNullOrWhiteSpace( item ) )
+                {
+                    ddlGridBlockSize.Items.Add( item );
+                }
+            }
         }
 
         /// <summary>
@@ -50,10 +72,14 @@ namespace RockWeb.Blocks.Reporting
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
                     ShowDetail( "dashboardId", int.Parse( itemId ) );
+                    /// <summary>
+                    /// Guid for Dashboard Block Sizes
+                    /// </summary>
+                    //public const string DASHBOARD_BLOCK_SIZES = "07EA2F91-4D17-4F7D-A61E-57A9D780C59A";
                 }
                 else
                 {
-                    pnlDetails.Visible = false;
+                    pnlDashboardGridBlockEditor.Visible = false;
                 }
             }
 
@@ -70,6 +96,59 @@ namespace RockWeb.Blocks.Reporting
         }
 
         /// <summary>
+        /// Handles the Click event of the btnSaveDashboardGridBlock control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnSaveDashboardGridBlock_Click( object sender, EventArgs e )
+        {
+            // ---------------- THIS IS THE PART THAT'S GOOD -----------------
+            Rock.Model.Dashboard dashboard = null;
+            DashboardService dashboardServce = new DashboardService();
+
+            int dashboardId = hfDashboardGridBlockId.ValueAsInt();
+
+            if ( dashboardId == 0 )
+            {
+            //    dashboard = new Rock.Model.Dashboard();
+            //    dashboard.IsSystem = false;
+            //    dashboard.Order = 0;
+            //    dashboardServce.Add( dashboard, CurrentPersonId );
+            }
+            else
+            {
+            //    dashboard = dashboardServce.Get( dashboardId );
+            }
+
+            //dashboard.MetricId = Convert.ToInt32( ddlMetric.SelectedValue );
+            //dashboard.StartDate = Convert.ToDateTime(dtpStartDate.Text);
+            //dashboard.EndDate = Convert.ToDateTime( dtpEndDate.Text );
+            //dashboard.Size = Convert.ToInt32(ddlGridBlockSize.SelectedValue);
+            // -------------------
+
+            //definedType.Name = tbTypeName.Text;
+            //definedType.Category = tbTypeCategory.Text;
+            //definedType.Description = tbTypeDescription.Text;
+            //definedType.FieldTypeId = int.Parse( ddlTypeFieldType.SelectedValue );
+
+            //if ( !definedType.IsValid )
+            //{
+            //    // Controls will render the error messages                    
+            //    return;
+            //}
+
+            //RockTransactionScope.WrapTransaction( () =>
+            //{
+            //    typeService.Save( definedType, CurrentPersonId );
+
+            //    // get it back to make sure we have a good Id
+            //    definedType = typeService.Get( definedType.Guid );
+            //} );
+
+            //ShowReadonlyDetails( definedType );
+        }
+
+        /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="itemKey">The item key.</param>
@@ -81,60 +160,55 @@ namespace RockWeb.Blocks.Reporting
                 return;
             }
 
-            pnlDetails.Visible = true;
-            Dashboard dashboard = null;
+            pnlDashboardGridBlockEditor.Visible = true;
+            Rock.Model.Dashboard dashboard = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                
+                dashboard = new DashboardService().Get( itemKeyValue );
             }
-            //if ( !itemKeyValue.Equals( 0 ) )
-            //{
-            //    definedType = new DefinedTypeService().Get( itemKeyValue );
-            //}
-            //else
-            //{
-            //    definedType = new DefinedType { Id = 0 };
-            //}
+            else
+            {
+                dashboard = new Rock.Model.Dashboard { Id = 0 };
+            }
 
-            //hfDefinedTypeId.SetValue( definedType.Id );
+            hfDashboardGridBlockId.SetValue( dashboard.Id );
 
-            //// render UI based on Authorized and IsSystem
-            //bool readOnly = false;
+            if ( dashboard.Id > 0 )
+            {
+                lActionTitleDashboardGridBlock.Text = ActionTitle.Edit( Rock.Model.Dashboard.FriendlyTypeName );
+            }
+            else
+            {
+                lActionTitleDashboardGridBlock.Text = ActionTitle.Add( Rock.Model.Dashboard.FriendlyTypeName );
+            }
+            
+            // render UI based on Authorized and IsSystem
+            bool readOnly = false;
 
-            //nbEditModeMessage.Text = string.Empty;
-            //if ( !IsUserAuthorized( "Edit" ) )
-            //{
-            //    readOnly = true;
-            //    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( DefinedType.FriendlyTypeName );
-            //}
+            nbEditModeMessage.Text = string.Empty;
+            if ( !IsUserAuthorized( "Edit" ) )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( DefinedType.FriendlyTypeName );
+            }
 
-            //if ( definedType.IsSystem )
-            //{
-            //    readOnly = true;
-            //    nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( DefinedType.FriendlyTypeName );
-            //}
+            if ( dashboard.IsSystem )
+            {
+                readOnly = true;
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( DefinedType.FriendlyTypeName );
+            }
 
-            //if ( readOnly )
-            //{
-            //    btnEdit.Visible = false;
-            //    ShowReadonlyDetails( definedType );
-            //}
-            //else
-            //{
-            //    btnEdit.Visible = true;
-            //    if ( definedType.Id > 0 )
-            //    {
-            //        ShowReadonlyDetails( definedType );
-            //    }
-            //    else
-            //    {
-            //        ShowEditDetails( definedType );
-            //    }
-            //}
+            if ( readOnly )
+            {
+                ddlGridBlockMetric.Enabled = false;
+                txtGridBlockDescription.Enabled = false;
+                dtpGridBlockStartDate.Enabled = false;
+                dtpGridBlockEndDate.Enabled = false;
+                ddlGridBlockSize.Enabled = false;
+                btnSaveDashboardGridBlock.Enabled = false;
+            }
 
-            //BindDefinedTypeAttributesGrid();
-            //BindDefinedValuesGrid();
         }
 
         /// <summary>
@@ -143,14 +217,6 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="definedType">Type of the defined.</param>
         private void ShowEditDetails( DefinedType definedType )
         {
-            if ( definedType.Id > 0 )
-            {
-                lActionTitle.Text = ActionTitle.Edit( DefinedType.FriendlyTypeName );
-            }
-            else
-            {
-                lActionTitle.Text = ActionTitle.Add( DefinedType.FriendlyTypeName );
-            }
 
             //SetEditMode( true );
 
@@ -162,65 +228,11 @@ namespace RockWeb.Blocks.Reporting
 
         #endregion
 
-        /// <summary>
-        /// Handles the Click event of the btnSaveMetricAttribute control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSaveMetricAttribute_Click( object sender, EventArgs e )
+        public void btnCancelDashboardGridBlock_Click( object sender, EventArgs e )
         {
-            //Attribute attribute = null;
-
-            //AttributeService attributeService = new AttributeService();
-            //if ( edtDefinedTypeAttributes.AttributeId.HasValue )
-            //{
-            //    attribute = attributeService.Get( edtDefinedTypeAttributes.AttributeId.Value );
-            //}
-
-            //if ( attribute == null )
-            //{
-            //    attribute = new Attribute();
-            //}
-
-            //edtDefinedTypeAttributes.GetAttributeProperties( attribute );
-
-            //// Controls will show warnings
-            //if ( !attribute.IsValid )
-            //{
-            //    return;
-            //}
-
-            //RockTransactionScope.WrapTransaction( () =>
-            //{
-            //    if ( attribute.Id.Equals( 0 ) )
-            //    {
-            //        attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( new DefinedValue().TypeName ).Id;
-            //        attribute.EntityTypeQualifierColumn = "DefinedTypeId";
-            //        attribute.EntityTypeQualifierValue = hfDefinedTypeId.Value;
-            //        attributeService.Add( attribute, CurrentPersonId );
-            //    }
-
-            //    Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
-            //    attributeService.Save( attribute, CurrentPersonId );
-            //} );
-
-            //pnlDetails.Visible = true;
-            //pnlDefinedTypeAttributes.Visible = false;
-
-            //BindDefinedTypeAttributesGrid();
-            //BindDefinedValuesGrid();
+            NavigateToParentPage();
         }
 
-        /// <summary>
-        /// Handles the Click event of the btnCancelMetricAttribute control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancelMetricAttribute_Click( object sender, EventArgs e )
-        {
-            //pnlDetails.Visible = true;
-            //pnlDefinedTypeAttributes.Visible = false;
-        }
 
     }
 }

@@ -41,6 +41,8 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e ); 
             //lbAdd.Click += lbAdd_Click;
+            Rock.Web.UI.RockPage.AddCSSLink( this.Page, "~/css/jquery.gridster.min.css" );      // only load the CSS & JS for Gridster on this page. 
+            Rock.Web.UI.RockPage.AddScriptLink( this.Page, "~/Scripts/jquery.gridster.js" );
         }
 
         public void lbAdd_Click( object sender, EventArgs e )

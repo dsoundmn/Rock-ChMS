@@ -1289,15 +1289,19 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212051230308_AddMissingTagConfiguration.resx">
       <DependentUpon>201212051230308_AddMissingTagConfiguration.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212051710292_AuthConfigureAdministrate.resx">
       <DependentUpon>201212051710292_AuthConfigureAdministrate.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212052022346_ClassRename.resx">
       <DependentUpon>201212052022346_ClassRename.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212052126507_DefinedValueNaming.resx">
       <DependentUpon>201212052126507_DefinedValueNaming.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212052255598_ServiceJobColumnNames.resx">
       <DependentUpon>201212052255598_ServiceJobColumnNames.cs</DependentUpon>
@@ -1319,6 +1323,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212211225129_CreateCheckInTables.resx">
       <DependentUpon>201212211225129_CreateCheckInTables.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201212211411123_Notes.resx">
       <DependentUpon>201212211411123_Notes.cs</DependentUpon>
