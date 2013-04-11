@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.Reporting
 
             //setup the data in the drop downs
             MetricService metricService = new MetricService();
-            var items2 = metricService.Queryable().OrderBy( a => a.Title ).Select( a => a.Title ).Distinct().ToList();
+            var items2 = metricService.Queryable().OrderBy( a => a.Title ).ThenBy( a => a.Id ).Select( a => a.Title ).Distinct().ToList();
             foreach ( var item in items2 )
             {
                 if ( !string.IsNullOrWhiteSpace( item ) )
@@ -104,46 +104,50 @@ namespace RockWeb.Blocks.Reporting
         {
             // ---------------- THIS IS THE PART THAT'S GOOD -----------------
             Rock.Model.Dashboard dashboard = null;
-            DashboardService dashboardServce = new DashboardService();
+            DashboardService dashboardService = new DashboardService();
 
             int dashboardId = hfDashboardGridBlockId.ValueAsInt();
 
+            // Get the dashboard block or create a new one if needed
             if ( dashboardId == 0 )
             {
-            //    dashboard = new Rock.Model.Dashboard();
-            //    dashboard.IsSystem = false;
-            //    dashboard.Order = 0;
-            //    dashboardServce.Add( dashboard, CurrentPersonId );
+                dashboard = new Rock.Model.Dashboard();
+                dashboard.IsSystem = false;
+                dashboard.Order = 0;
+                dashboardService.Add( dashboard, CurrentPersonId );
             }
             else
             {
-            //    dashboard = dashboardServce.Get( dashboardId );
+                dashboard = dashboardService.Get( dashboardId );
             }
 
-            //dashboard.MetricId = Convert.ToInt32( ddlMetric.SelectedValue );
-            //dashboard.StartDate = Convert.ToDateTime(dtpStartDate.Text);
-            //dashboard.EndDate = Convert.ToDateTime( dtpEndDate.Text );
-            //dashboard.Size = Convert.ToInt32(ddlGridBlockSize.SelectedValue);
+            //This is where we set all the fields
+            dashboard.MetricId = Convert.ToInt32( ddlGridBlockMetric.SelectedIndex );
+            dashboard.Description = txtGridBlockDescription.Text;
+            dashboard.StartDate = Convert.ToDateTime(dtpGridBlockStartDate.Text);
+            dashboard.EndDate = Convert.ToDateTime( dtpGridBlockEndDate.Text );
+            dashboard.Size = Convert.ToInt32(ddlGridBlockSize.SelectedValue);
+
+            if ( !Page.IsValid )
+            {
+                return;
+            }
+
+            if ( !dashboard.IsValid )
+            {
+                // field controls render error messages
+                return;
+            }
+
+            RockTransactionScope.WrapTransaction( () =>
+            {
+                dashboardService.Save(dashboard, CurrentPersonId);
+
+                // get it back to make sure we have a good Id
+                dashboard = dashboardService.Get(dashboard.Guid);
+            } );
+            
             // -------------------
-
-            //definedType.Name = tbTypeName.Text;
-            //definedType.Category = tbTypeCategory.Text;
-            //definedType.Description = tbTypeDescription.Text;
-            //definedType.FieldTypeId = int.Parse( ddlTypeFieldType.SelectedValue );
-
-            //if ( !definedType.IsValid )
-            //{
-            //    // Controls will render the error messages                    
-            //    return;
-            //}
-
-            //RockTransactionScope.WrapTransaction( () =>
-            //{
-            //    typeService.Save( definedType, CurrentPersonId );
-
-            //    // get it back to make sure we have a good Id
-            //    definedType = typeService.Get( definedType.Guid );
-            //} );
 
             //ShowReadonlyDetails( definedType );
         }
