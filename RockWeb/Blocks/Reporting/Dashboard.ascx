@@ -6,39 +6,15 @@
         <span id="jqHeight">0</span>
 		<div id="wrap">
 			<section class="gridster">
-				<ul>
-                    
-<%--                    <li class="widget" data-row="1" data-col="1" data-sizex="1" data-sizey="1"></li>
-                    <li class="widget" data-row="2" data-col="1" data-sizex="1" data-sizey="1"></li>
-                    <li class="widget" data-row="3" data-col="1" data-sizex="1" data-sizey="1"></li>
- 
-                    <li class="widget" data-row="1" data-col="2" data-sizex="2" data-sizey="1"></li>
-                    <li class="widget" data-row="2" data-col="2" data-sizex="2" data-sizey="2"></li>
- 
-                    <li class="widget" data-row="1" data-col="4" data-sizex="1" data-sizey="1"></li>
-                    <li class="widget" data-row="2" data-col="4" data-sizex="2" data-sizey="1"></li>
-                    <li class="widget" data-row="3" data-col="4" data-sizex="1" data-sizey="1"></li>
- 
-                    <li class="widget" data-row="1" data-col="5" data-sizex="1" data-sizey="1"></li>
-                    <li class="widget" data-row="3" data-col="5" data-sizex="1" data-sizey="1"></li>--%>
-
+				<ul>   
                     <li class="widget" data-row="1" data-col="1" data-sizex="1" data-sizey="1">1</li>
                     <li class="widget" data-row="2" data-col="1" data-sizex="1" data-sizey="1">2</li>
-                    <li class="widget" data-row="3" data-col="1" data-sizex="1" data-sizey="1">3</li>
-                    <li class="widget" data-row="4" data-col="1" data-sizex="1" data-sizey="1">4</li>
-                    <li class="widget" data-row="1" data-col="2" data-sizex="1" data-sizey="1">5</li>
-                    <li class="widget" data-row="2" data-col="2" data-sizex="1" data-sizey="1">6</li>
-                    <li class="widget" data-row="3" data-col="2" data-sizex="1" data-sizey="1">7</li>
-                    <li class="widget" data-row="4" data-col="2" data-sizex="1" data-sizey="1">8</li>
-                    <li class="widget" data-row="1" data-col="3" data-sizex="1" data-sizey="1">9</li>
-                    <li class="widget" data-row="2" data-col="3" data-sizex="1" data-sizey="1">10</li>
-                    <li class="widget" data-row="3" data-col="3" data-sizex="1" data-sizey="1">11</li>
-                    <li class="widget" data-row="4" data-col="3" data-sizex="1" data-sizey="1">12</li>
-                    <li class="widget" data-row="1" data-col="4" data-sizex="1" data-sizey="1">13</li>
-                    <li class="widget" data-row="2" data-col="4" data-sizex="1" data-sizey="1">14</li>
-                    <li class="widget" data-row="3" data-col="4" data-sizex="1" data-sizey="1">15</li>
-                    <li class="widget" data-row="4" data-col="4" data-sizex="1" data-sizey="1">16</li>
-                    <li class="widget" data-row="5" data-col="1" data-sizex="4" data-sizey="4">17</li>
+                    <li class="widget" data-row="1" data-col="2" data-sizex="1" data-sizey="1">3</li>
+                    <li class="widget" data-row="2" data-col="2" data-sizex="1" data-sizey="1">4</li>
+                    <li class="widget" data-row="1" data-col="3" data-sizex="1" data-sizey="1">5</li>
+                    <li class="widget" data-row="2" data-col="3" data-sizex="1" data-sizey="1">6</li>
+                    <li class="widget" data-row="1" data-col="4" data-sizex="1" data-sizey="1">7</li>
+                    <li class="widget" data-row="2" data-col="4" data-sizex="1" data-sizey="1">8</li>
 				</ul>
 			</section> <!-- end "gridster" -->
 		</div> <!-- end "wrap" -->
@@ -64,8 +40,10 @@
 
    		        $('#jqWidth').html(width);      // Display the width
    		        $('#jqHeight').html(height);    // Display the height
-                /*
-   		        if (width >= 1200) {
+   		        /*
+                if (width >= 1920) {
+                    $("#wrap").removeClass().addClass("div-1920");
+                } else if (width < 1920 && width >= 1200) {
    		            $("#wrap").removeClass().addClass("div-1200");
    		        } else if (width < 1200 && width >= 1024) {
    		            $("#wrap").removeClass().addClass("div-1024");
@@ -89,6 +67,8 @@
    		    //    $(".wrap").removeClass().addClass("div-640");
    		    //    $(".wrap").removeClass().addClass("div-768");
    		    //    $(".wrap").removeClass().addClass("div-1024");
+   		    //    $(".wrap").removeClass().addClass("div-1200");
+            //    $(".wrap").removeClass().addClass("div-1920');
    		    //};
 		</script>
 

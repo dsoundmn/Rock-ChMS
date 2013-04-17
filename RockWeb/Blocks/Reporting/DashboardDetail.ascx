@@ -20,14 +20,11 @@
                         <Rock:DataDropDownList ID="ddlGridBlockSize" runat="server" SourceTypeName="Rock.Model.Dashboard, Rock" PropertyName="Size" LabelText="Grid Block Size" />
                     </div>
                 </div>
-                <div class="attributes">
-                    <asp:PlaceHolder ID="phDashboardGridBlockAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
-                </div>
             </fieldset>
 
             <div class="actions">
                 <asp:LinkButton ID="btnSaveDashboardGridBlock" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveDashboardGridBlock_Click" />
-                <asp:LinkButton ID="btnCancelDashboardGridBlock" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancelDashboardGridBlock_Click" />
+                <asp:LinkButton ID="btnCancelDashboardGridBlock" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancelDashboardGridBlock_Click" />
             </div>
         </asp:Panel>
 

@@ -3,52 +3,41 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using System.Xml.Linq;
-using System.Xml.Xsl;
-using System.Text;
-
-
 using Rock;
 using Rock.Attribute;
-using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
 {
     [DetailPage]
+    // should always add a description attribute to your blocks. Add one here.
     public partial class Dashboard : RockBlock
-    {
-        
-        /*protected void Page_Load(object sender, EventArgs e)
-        {
-        }*/
-
+    {        
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e ); 
-            //lbAdd.Click += lbAdd_Click;
-            Rock.Web.UI.RockPage.AddCSSLink( this.Page, "~/css/jquery.gridster.min.css" );      // only load the CSS & JS for Gridster on this page. 
-            Rock.Web.UI.RockPage.AddScriptLink( this.Page, "~/Scripts/jquery.gridster.js" );
+            RockPage.AddCSSLink( this.Page, "~/css/jquery.gridster.min.css" );      // only load the CSS & JS for Gridster on this page. 
+            RockPage.AddScriptLink( this.Page, "~/Scripts/jquery.gridster.js" );
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbAdd control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         public void lbAdd_Click( object sender, EventArgs e )
         {
             NavigateToDetailPage( "dashboardId", 0 );
         }
-
     }
 }

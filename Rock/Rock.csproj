@@ -742,6 +742,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Category.cs" />
+    <Compile Include="Reporting\DashboardComponent.cs" />
+    <Compile Include="Reporting\DashboardContainer.cs" />
+    <Compile Include="Reporting\Dashboard\Metric.cs" />
+    <Compile Include="Reporting\Dashboard\Twitter.cs" />
     <Compile Include="Search\Person\PersonQueryExtensions.cs" />
     <Compile Include="SystemGuid\BinaryFileType.cs" />
     <Compile Include="Web\Cache\CachedModel.cs" />

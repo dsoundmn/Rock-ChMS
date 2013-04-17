@@ -22,14 +22,9 @@ using System.Xml;
 
 namespace RockWeb.Blocks.Reporting
 {
-
-    public partial class DashboardDetail : RockBlock
+    public partial class DashboardDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
-
-        //protected void Page_Load( object sender, EventArgs e )
-        //{
-        //}
 
         protected override void OnInit( EventArgs e )
         {
