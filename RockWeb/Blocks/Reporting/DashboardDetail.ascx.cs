@@ -19,6 +19,7 @@ using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.Collections;
 using System.Xml;
+using Rock.Reporting;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -29,28 +30,33 @@ namespace RockWeb.Blocks.Reporting
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            pnlDashboardGridBlockEditor.Visible = true;
+            pnlDetails.Visible = true;
 
             //setup the data in the drop downs
-            MetricService metricService = new MetricService();
-            var items2 = metricService.Queryable().OrderBy( a => a.Title ).ThenBy( a => a.Id ).Select( a => a.Title ).Distinct().ToList();
-            foreach ( var item in items2 )
-            {
-                if ( !string.IsNullOrWhiteSpace( item ) )
-                {
-                    ddlGridBlockMetric.Items.Add( item );
-                }
-            }
+            List<DashboardComponent> dash = new List<DashboardComponent>();
+            dash = Rock.Reporting.DashboardContainer.GetAllComponents();
+            ddlDashboardWidgetOptions.DataSource = dash;
+            ddlDashboardWidgetOptions.DataBind();
 
-            DefinedValueService valueService = new DefinedValueService();
-            var items = valueService.Queryable().Where( a => a.DefinedTypeId == 19 ).OrderBy( a => a.Name ).Select( a => a.Name ).Distinct().ToList();
-            foreach ( var item in items )
-            {
-                if ( !string.IsNullOrWhiteSpace( item ) )
-                {
-                    ddlGridBlockSize.Items.Add( item );
-                }
-            }
+            //MetricService metricService = new MetricService();
+            //var items2 = metricService.Queryable().OrderBy( a => a.Title ).ThenBy( a => a.Id ).Select( a => a.Title ).Distinct().ToList();
+            //foreach ( var item in items2 )
+            //{
+            //    if ( !string.IsNullOrWhiteSpace( item ) )
+            //    {
+            //        ddlGridBlockMetric.Items.Add( item );
+            //    }
+            //}
+
+            //DefinedValueService valueService = new DefinedValueService();
+            //var items = valueService.Queryable().Where( a => a.DefinedTypeId == 19 ).OrderBy( a => a.Name ).Select( a => a.Name ).Distinct().ToList();
+            //foreach ( var item in items )
+            //{
+            //    if ( !string.IsNullOrWhiteSpace( item ) )
+            //    {
+            //        ddlGridBlockSize.Items.Add( item );
+            //    }
+            //}
         }
 
         /// <summary>
@@ -74,7 +80,7 @@ namespace RockWeb.Blocks.Reporting
                 }
                 else
                 {
-                    pnlDashboardGridBlockEditor.Visible = false;
+                    pnlDetails.Visible = false;
                 }
             }
 
@@ -95,11 +101,11 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnSaveDashboardGridBlock_Click( object sender, EventArgs e )
+        protected void btnSave_Click( object sender, EventArgs e )
         {
             // ---------------- THIS IS THE PART THAT'S GOOD -----------------
             Rock.Model.Dashboard dashboard = null;
-            DashboardService dashboardService = new DashboardService();
+            //DashboardService dashboardService = new DashboardService();
 
             int dashboardId = hfDashboardGridBlockId.ValueAsInt();
 
@@ -108,20 +114,19 @@ namespace RockWeb.Blocks.Reporting
             {
                 dashboard = new Rock.Model.Dashboard();
                 dashboard.IsSystem = false;
-                dashboard.Order = 0;
-                dashboardService.Add( dashboard, CurrentPersonId );
+                //dashboardService.Add( dashboard, CurrentPersonId );
             }
             else
             {
-                dashboard = dashboardService.Get( dashboardId );
+                //dashboard = dashboardService.Get( dashboardId );
             }
 
             //This is where we set all the fields
-            dashboard.MetricId = Convert.ToInt32( ddlGridBlockMetric.SelectedIndex );
-            dashboard.Description = txtGridBlockDescription.Text;
-            dashboard.StartDate = Convert.ToDateTime(dtpGridBlockStartDate.Text);
-            dashboard.EndDate = Convert.ToDateTime( dtpGridBlockEndDate.Text );
-            dashboard.Size = Convert.ToInt32(ddlGridBlockSize.SelectedValue);
+            //dashboard.MetricId = Convert.ToInt32( ddlGridBlockMetric.SelectedIndex );
+            //dashboard.Description = txtGridBlockDescription.Text;
+            //dashboard.StartDate = Convert.ToDateTime(dtpGridBlockStartDate.Text);
+            //dashboard.EndDate = Convert.ToDateTime( dtpGridBlockEndDate.Text );
+            //dashboard.Size = Convert.ToInt32(ddlGridBlockSize.SelectedValue);
 
             if ( !Page.IsValid )
             {
@@ -136,10 +141,10 @@ namespace RockWeb.Blocks.Reporting
 
             RockTransactionScope.WrapTransaction( () =>
             {
-                dashboardService.Save(dashboard, CurrentPersonId);
+                //dashboardService.Save(dashboard, CurrentPersonId);
 
                 // get it back to make sure we have a good Id
-                dashboard = dashboardService.Get(dashboard.Guid);
+                //dashboard = dashboardService.Get(dashboard.Guid);
             } );
             
             // -------------------
@@ -159,12 +164,12 @@ namespace RockWeb.Blocks.Reporting
                 return;
             }
 
-            pnlDashboardGridBlockEditor.Visible = true;
+            pnlDetails.Visible = true;
             Rock.Model.Dashboard dashboard = null;
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                dashboard = new DashboardService().Get( itemKeyValue );
+                //dashboard = new DashboardService().Get( itemKeyValue );
             }
             else
             {
@@ -175,11 +180,11 @@ namespace RockWeb.Blocks.Reporting
 
             if ( dashboard.Id > 0 )
             {
-                lActionTitleDashboardGridBlock.Text = ActionTitle.Edit( Rock.Model.Dashboard.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit( Rock.Model.Dashboard.FriendlyTypeName );
             }
             else
             {
-                lActionTitleDashboardGridBlock.Text = ActionTitle.Add( Rock.Model.Dashboard.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add( Rock.Model.Dashboard.FriendlyTypeName );
             }
             
             // render UI based on Authorized and IsSystem
@@ -200,12 +205,12 @@ namespace RockWeb.Blocks.Reporting
 
             if ( readOnly )
             {
-                ddlGridBlockMetric.Enabled = false;
-                txtGridBlockDescription.Enabled = false;
-                dtpGridBlockStartDate.Enabled = false;
-                dtpGridBlockEndDate.Enabled = false;
-                ddlGridBlockSize.Enabled = false;
-                btnSaveDashboardGridBlock.Enabled = false;
+                //ddlGridBlockMetric.Enabled = false;
+                //txtGridBlockDescription.Enabled = false;
+                //dtpGridBlockStartDate.Enabled = false;
+                //dtpGridBlockEndDate.Enabled = false;
+                //ddlGridBlockSize.Enabled = false;
+                //btnSaveDashboardGridBlock.Enabled = false;
             }
 
         }
@@ -227,7 +232,7 @@ namespace RockWeb.Blocks.Reporting
 
         #endregion
 
-        public void btnCancelDashboardGridBlock_Click( object sender, EventArgs e )
+        public void btnCancel_Click( object sender, EventArgs e )
         {
             NavigateToParentPage();
         }

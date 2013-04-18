@@ -5,18 +5,15 @@
 //
 
 using System;
-using System.Linq;
+using System.ComponentModel;
 using Rock;
 using Rock.Attribute;
-using Rock.Data;
-using Rock.Model;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Reporting
 {
     [DetailPage]
-    // should always add a description attribute to your blocks. Add one here.
+    [Description( "A dashboard widget page" )]
     public partial class Dashboard : RockBlock
     {        
         /// <summary>

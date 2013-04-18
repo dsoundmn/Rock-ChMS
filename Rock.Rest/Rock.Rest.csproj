@@ -57,7 +57,6 @@
     <Compile Include="Controllers\CategoriesController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\AttendanceCodesController.cs" />
     <Compile Include="Controllers\CodeGenerated\BinaryFileTypesController.cs" />
-    <Compile Include="Controllers\CodeGenerated\DashboardsController.cs" />
     <Compile Include="Controllers\CodeGenerated\DataViewFiltersController.cs" />
     <Compile Include="Controllers\CodeGenerated\DataViewsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotesController.cs" />

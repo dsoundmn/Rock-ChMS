@@ -16,7 +16,7 @@ namespace Rock.Reporting
     /// <summary>
     /// MEF Container class for dashboard "widgets"
     /// </summary>
-    class DashboardContainer : Container<DashboardComponent, IComponentData>
+    public class DashboardContainer : Container<DashboardComponent, IComponentData>
     {
         private static DashboardContainer instance;
 
@@ -57,6 +57,19 @@ namespace Rock.Reporting
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets all the components
+        /// </summary>
+        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <returns></returns>
+        public static List<DashboardComponent> GetAllComponents()
+        {
+            return Instance.Components
+                .Select( c => c.Value.Value )
+                .OrderBy( c => c.Order )
+                .ToList();
         }
 
         // MEF Import Definition
