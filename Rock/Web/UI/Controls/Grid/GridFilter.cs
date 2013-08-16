@@ -20,6 +20,7 @@ namespace Rock.Web.UI.Controls
     public class GridFilter : PlaceHolder, INamingContainer
     {
         private LinkButton lbFilter;
+        private LinkButton lbClearFilter;
         private Dictionary<string, string> _userPreferences;
 
         /// <summary>
@@ -75,6 +76,35 @@ Sys.Application.add_load(function () {
             lbFilter.Text = "Apply Filter";
             lbFilter.CausesValidation = false;
             lbFilter.Click += lbFilter_Click;
+
+            lbClearFilter = new LinkButton();
+            Controls.Add( lbClearFilter );
+            lbClearFilter.ID = "lbClearFilter";
+            lbClearFilter.CssClass = "btn";
+            lbClearFilter.Text = "Clear Filter";
+            lbClearFilter.CausesValidation = false;
+            lbClearFilter.Click += lbClearFilter_Click;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbClearFilter control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void lbClearFilter_Click( object sender, EventArgs e )
+        {
+            foreach ( var key in _userPreferences.Keys.ToList() )
+            {
+                _userPreferences[key] = null;
+            }
+
+            SaveUserPreferences();
+
+            if ( FilterCleared != null )
+            {
+                FilterCleared( sender, e );
+            }
         }
 
         /// <summary>
@@ -100,7 +130,7 @@ Sys.Application.add_load(function () {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.Write( "<header>" );
-            
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.RenderBeginTag( HtmlTextWriterTag.H3 );
@@ -156,6 +186,8 @@ Sys.Application.add_load(function () {
             writer.RenderEndTag();
 
             lbFilter.RenderControl( writer );
+            writer.WriteLine();
+            lbClearFilter.RenderControl( writer );
 
             writer.RenderEndTag();
 
@@ -174,7 +206,7 @@ Sys.Application.add_load(function () {
             {
                 foreach ( Control child in Controls )
                 {
-                    if ( child != lbFilter )
+                    if ( ( child != lbFilter ) && ( child != lbClearFilter ) )
                     {
                         child.RenderControl( writer );
                     }
@@ -229,8 +261,15 @@ Sys.Application.add_load(function () {
 
         /// <summary>
         /// Occurs when user applies a filter.
+        /// Normally, you'll use this event to set the UserPreferences from the values in your filter controls, followed by your BindGrid().
         /// </summary>
         public event EventHandler ApplyFilterClick;
+
+        /// <summary>
+        /// Occurs after the User clicks Clear Filter and after the UserPreferences are cleared.
+        /// Normally you'll just need to do your BindFilter() and BindGrid() on this event.
+        /// </summary>
+        public event EventHandler FilterCleared;
 
         /// <summary>
         /// Occurs when grid filter displays an existing filter value.  Key and Value can be 
@@ -255,7 +294,7 @@ Sys.Application.add_load(function () {
                 set { _key = value; }
             }
             private string _key = string.Empty;
-            
+
             /// <summary>
             /// Gets or sets the value.
             /// </summary>
@@ -282,3 +321,4 @@ Sys.Application.add_load(function () {
         }
     }
 }
+    
