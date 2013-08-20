@@ -35,20 +35,22 @@ namespace RockWeb.Blocks.Crm
             string type = PageParameter( "SearchType" );
             string term = PageParameter( "SearchTerm" );
 
-            var people = new List<Person>();
+            var personSpouseList = new List<PersonService.PersonWithSpouse>();
 
             if ( !String.IsNullOrWhiteSpace( type ) && !String.IsNullOrWhiteSpace( term ) )
             {
-
                 using ( var uow = new Rock.Data.UnitOfWorkScope() )
                 {
                     var personService = new PersonService();
+                    var personSpouseQuery = personService.QueryableWithSpouse();
 
                     switch ( type.ToLower() )
                     {
                         case ( "name" ):
 
-                            people = personService.GetByFullName( term, true ).ToList();
+                            var peopleIds = personService.GetByFullName( term, true ).Select( a => a.Id ).ToList();
+                            personSpouseQuery = personSpouseQuery.Where( a => peopleIds.Contains( a.Person.Id ) );
+                            personSpouseList = personSpouseQuery.OrderBy(a => a.Person.FullNameLastFirst).ToList();
 
                             break;
 
@@ -58,12 +60,10 @@ namespace RockWeb.Blocks.Crm
 
                             var personIds = phoneService.Queryable().
                                 Where( n => n.Number.Contains( term ) ).
-                                Select( n => n.PersonId).Distinct();
+                                Select( n => n.PersonId ).Distinct();
 
-                            people = personService.Queryable().
-                                Where( p => personIds.Contains( p.Id ) ).
-                                OrderBy( p => p.LastName ).ThenBy( p => ( p.FirstName ) ).
-                                ToList();
+                            personSpouseQuery = personSpouseQuery.Where( p => personIds.Contains( p.Person.Id ) );
+                            personSpouseList = personSpouseQuery.OrderBy(a => a.Person.FullNameLastFirst).ToList();
 
                             break;
 
@@ -73,24 +73,25 @@ namespace RockWeb.Blocks.Crm
 
                         case ( "email" ):
 
-                            people = personService.Queryable().
-                                Where( p => p.Email.Contains( term ) ).
-                                OrderBy( p => p.LastName ).ThenBy( p => ( p.FirstName ) ).
-                                ToList();
+                            personSpouseQuery = personSpouseQuery.Where( p => p.Person.Email.Contains( term ) );
+
+                            personSpouseList = personSpouseQuery.OrderBy(a => a.Person.FullNameLastFirst).ToList();
 
                             break;
                     }
                 }
             }
 
-            if ( people.Count == 1 )
+            
+            
+            if ( personSpouseList.Count == 1 )
             {
-                Response.Redirect( string.Format( "~/Person/{0}", people[0].Id ), false );
+                Response.Redirect( string.Format( "~/Person/{0}", personSpouseList[0].Person.Id ), false );
                 Context.ApplicationInstance.CompleteRequest();
             }
             else
             {
-                gPeople.DataSource = people;
+                gPeople.DataSource = personSpouseList;
                 gPeople.DataBind();
             }
         }

@@ -6,15 +6,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Data.Entity;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Person POCO Service class
     /// </summary>
-    public partial class PersonService 
+    public partial class PersonService
     {
         /// <summary>
         /// Gets a queryable list of people
@@ -68,8 +69,8 @@ namespace Rock.Model
         /// </returns>
         public IEnumerable<Person> GetByEmail( string email, bool includeDeceased = false )
         {
-            return Repository.Find( t => 
-                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value) &&
+            return Repository.Find( t =>
+                ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
                 ( t.Email == email || ( email == null && t.Email == null ) )
             );
         }
@@ -180,9 +181,9 @@ namespace Rock.Model
         /// </returns>
         public IEnumerable<Person> GetByTitleId( int? titleId, bool includeDeceased = false )
         {
-            return Repository.Find( t => 
+            return Repository.Find( t =>
                 ( includeDeceased || !t.IsDeceased.HasValue || !t.IsDeceased.Value ) &&
-                ( t.TitleValueId == titleId || ( titleId == null && t.TitleValueId == null ) ) 
+                ( t.TitleValueId == titleId || ( titleId == null && t.TitleValueId == null ) )
             );
         }
 
@@ -254,10 +255,68 @@ namespace Rock.Model
             Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
             return new GroupMemberService().Queryable()
-                .Where( m => m.PersonId == person.Id && m.Group.GroupType.Guid == familyGuid)
-                .SelectMany( m => m.Group.Members)
-                .Where( fm => includeSelf || fm.PersonId != person.Id)
+                .Where( m => m.PersonId == person.Id && m.Group.GroupType.Guid == familyGuid )
+                .SelectMany( m => m.Group.Members )
+                .Where( fm => includeSelf || fm.PersonId != person.Id )
                 .Distinct();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public class PersonWithSpouse
+        {
+            /// <summary>
+            /// Gets or sets the person.
+            /// </summary>
+            /// <value>
+            /// The person.
+            /// </value>
+            public Person Person { get; set; }
+            
+            /// <summary>
+            /// Gets or sets the spouse.
+            /// </summary>
+            /// <value>
+            /// The spouse.
+            /// </value>
+            public Person Spouse { get; set; }
+        }
+
+        public IQueryable<PersonWithSpouse> QueryableWithSpouse()
+        {
+            RockContext rockContext = ( this.Repository as EFRepository<Person>).Context as RockContext;
+            int groupTypeFamilyId = new GroupTypeService().Get(new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY )).Id;
+            int groupRoleAdultId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ).Id;
+            int maritalStatusMarriedId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED ) ).Id;
+
+            var adultMarriedFamilyMembersCTE = new GroupMemberService( rockContext ).Queryable().AsNoTracking()
+                .Where( a => a.Group.GroupTypeId == groupTypeFamilyId )
+                .Where( a => a.GroupRoleId ==  groupRoleAdultId )
+                .Where( a => a.Person.MaritalStatusValueId == maritalStatusMarriedId )
+                .Select( a => new
+                {
+                    Person = a.Person,
+                    PersonId = a.PersonId,
+                    PersonGender = a.Person.Gender,
+                    GroupId = a.GroupId
+                } );
+
+            var personWithSpouseQry = from person in this.Queryable().AsNoTracking()
+                                      join personFamilyMember in adultMarriedFamilyMembersCTE
+                                      on person.Id equals personFamilyMember.PersonId into personJoin
+                                      from personResult in personJoin.DefaultIfEmpty()
+                                      join spouseFamilyMember in adultMarriedFamilyMembersCTE
+                                      on personResult.GroupId equals spouseFamilyMember.GroupId into spouseJoin
+                                      from spouseResult in spouseJoin.DefaultIfEmpty()
+                                      where spouseResult.PersonId != person.Id
+                                      where spouseResult.PersonGender != person.Gender
+                                      select new PersonWithSpouse { Person = person, Spouse = spouseResult.Person};
+
+            var someList = personWithSpouseQry.ToList();
+
+            return personWithSpouseQry;
+
         }
 
         #endregion
@@ -323,20 +382,20 @@ namespace Rock.Model
             // 1) Adult in the same family as Person (GroupType = Family, GroupRole = Adult, and in same Group)
             // 2) Opposite Gender as Person
             // 3) Both Persons are Married
-            
+
             Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
-            Guid marriedGuid = new Guid(Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED);
-            int marriedDefinedValueId = new DefinedValueService().Queryable().First(a => a.Guid == marriedGuid).Id;
+            Guid marriedGuid = new Guid( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED );
+            int marriedDefinedValueId = new DefinedValueService().Queryable().First( a => a.Guid == marriedGuid ).Id;
 
             if ( person.MaritalStatusValueId != marriedDefinedValueId )
             {
                 return null;
             }
 
-            return GetFamilyMembers(person)
-                .Where( m => m.GroupRole.Guid == adultGuid)
+            return GetFamilyMembers( person )
+                .Where( m => m.GroupRole.Guid == adultGuid )
                 .Where( m => m.Person.Gender != person.Gender )
-                .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId)
+                .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId )
                 .Select( m => m.Person )
                 .FirstOrDefault();
         }
@@ -352,7 +411,7 @@ namespace Rock.Model
         /// <param name="key"></param>
         /// <param name="values"></param>
         /// <param name="personId"></param>
-        public void SaveUserPreference(Person person, string key, List<string> values, int? personId)
+        public void SaveUserPreference( Person person, string key, List<string> values, int? personId )
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
 
@@ -417,12 +476,12 @@ namespace Rock.Model
             var attributeService = new Model.AttributeService();
             var attribute = attributeService.Get( PersonEntityTypeId, string.Empty, string.Empty, key );
 
-            if (attribute != null)
+            if ( attribute != null )
             {
                 var attributeValueService = new Model.AttributeValueService();
-                var attributeValues = attributeValueService.GetByAttributeIdAndEntityId(attribute.Id, person.Id);
-                if (attributeValues != null && attributeValues.Count() > 0)
-                    return attributeValues.Select( v => v.Value).ToList();
+                var attributeValues = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, person.Id );
+                if ( attributeValues != null && attributeValues.Count() > 0 )
+                    return attributeValues.Select( v => v.Value ).ToList();
             }
 
             return null;
@@ -446,9 +505,9 @@ namespace Rock.Model
                     v.Attribute.EntityTypeQualifierValue == string.Empty &&
                     v.EntityId == person.Id ) )
             {
-                if (!values.Keys.Contains(attributeValue.Attribute.Key))
-                    values.Add(attributeValue.Attribute.Key, new List<string>());
-                values[attributeValue.Attribute.Key].Add(attributeValue.Value);
+                if ( !values.Keys.Contains( attributeValue.Attribute.Key ) )
+                    values.Add( attributeValue.Attribute.Key, new List<string>() );
+                values[attributeValue.Attribute.Key].Add( attributeValue.Value );
             }
 
             return values;
