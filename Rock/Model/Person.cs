@@ -55,7 +55,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [DataMember]
-        [DefinedValue( SystemGuid.DefinedType.PERSON_RECORD_TYPE )]
+        [DefinedValue( typeof(SystemGuid.DefinedType.PERSON_RECORD_TYPE) )]
         public int? RecordTypeValueId { get; set; }
 
         /// <summary>
@@ -314,7 +314,7 @@ namespace Rock.Model
         /// .
         /// </value>
         [DataMember]
-        [DefinedValue( SystemGuid.DefinedType.PERSON_MARITAL_STATUS )]
+        [DefinedValue( typeof(SystemGuid.DefinedType.PERSON_MARITAL_STATUS) )]
         public int? MaritalStatusValueId { get; set; }
 
         /// <summary>

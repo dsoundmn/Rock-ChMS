@@ -23,7 +23,10 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Gets the Family group type
         /// </summary>
-        public const string GROUPTYPE_FAMILY= "790E3215-3B10-442B-AF69-616C0DCB998E";
+        public class GROUPTYPE_FAMILY : SYSTEM_GUID_BASE
+        {
+            public static readonly Guid GuidValue = new Guid("790E3215-3B10-442B-AF69-616C0DCB998E");
+        }
 
         /// <summary>
         /// Gets the Event Attendees GroupType

@@ -127,7 +127,7 @@ namespace Rock.Rest.Controllers
                     var groupMemberQry = groupMemberService.Queryable().Where( a => a.PersonId.Equals( person.Id ) );
                     List<GroupMember> personGroupMember = groupMemberQry.ToList();
 
-                    Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                    Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.GuidValue;
                     Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
 
                     GroupMember familyGroupMember = personGroupMember.Where( a => a.Group.GroupType.Guid.Equals( familyGuid ) ).FirstOrDefault();

@@ -31,5 +31,15 @@ namespace Rock.Data
             DefinedTypeGuid = new Guid( definedTypeGuid );
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefinedValueAttribute"/> class.
+        /// </summary>
+        /// <param name="systemGuidType">The syste m_ unique identifier.</param>
+        public DefinedValueAttribute( Type systemGuidType )
+        {
+            var info = systemGuidType.GetField( "GuidValue");
+            DefinedTypeGuid = (Guid)info.GetValue( null );
+        }
+
     }
 }

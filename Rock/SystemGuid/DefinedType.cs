@@ -96,7 +96,11 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Guid for the types of Person Records (such as person, business, etc.)
         /// </summary>
-        public const string PERSON_RECORD_TYPE =  "26be73a6-a9c5-4e94-ae00-3afdcf8c9275";
+        public class PERSON_RECORD_TYPE : SYSTEM_GUID_BASE
+        {
+            public const string GuidAsUpperString = "26BE73A6-A9C5-4E94-AE00-3AFDCF8C9275";
+            public static readonly Guid Guid = new Guid( GuidAsUpperString );
+        }
 
         /// <summary>
         /// Guid for the types of Person Record Statuses (such as active, inactive, pending, etc.)
@@ -126,7 +130,11 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Guid for the types of Person Marital Statuses (such as Married, Single, Divorced, Widowed, etc.)
         /// </summary>
-        public const string PERSON_MARITAL_STATUS =  "b4b92c3f-a935-40e1-a00b-ba484ead613b";
+        public class PERSON_MARITAL_STATUS : SYSTEM_GUID_BASE 
+        {
+            public const string GuidAsUpperString = "B4B92C3F-A935-40E1-A00B-BA484EAD613B";
+            public static readonly Guid Guid = new Guid( GuidAsUpperString );
+        };
 
         /// <summary>
         /// Guid for the types of Person phone numbers (such as Primary, Secondary, etc.)
