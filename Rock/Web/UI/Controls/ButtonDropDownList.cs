@@ -18,6 +18,9 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:ButtonDropDownList runat=server></{0}:ButtonDropDownList>" )]
     public class ButtonDropDownList : ListControl, ILabeledControl
     {
+        /// <summary>
+        /// The label
+        /// </summary>
         protected Literal label;
 
         private String _btnTitle = string.Empty;
@@ -33,7 +36,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The label text.
         /// </value>
-        public string LabelText
+        public string Label
         {
             get
             {
@@ -242,7 +245,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                bool renderControlGroupDiv = !string.IsNullOrEmpty( LabelText );
+                bool renderControlGroupDiv = !string.IsNullOrEmpty( Label );
 
                 if ( renderControlGroupDiv )
                 {

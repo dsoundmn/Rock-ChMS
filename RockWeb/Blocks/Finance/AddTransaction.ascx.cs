@@ -37,36 +37,39 @@ namespace RockWeb.Blocks.Finance
     [CustomDropdownListField( "Layout Style", "How the sections of this page should be displayed", "Vertical,Fluid", false, "Vertical", "", 5 )]
 
     [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 6 )]
-    [BooleanField( "Allow Other Accounts", "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available", true, "", 7 )]
+    [BooleanField( "Additional Accounts", "Display option for selecting additional accounts", "Don't display option", 
+        "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available", true, "", 7 )]
     [TextField( "Add Account Text", "The button text to display for adding an additional account", false, "Add Another Account", "", 8 )]
 
-    [BooleanField( "Allow Scheduled Transactions", "If the selected gateway(s) allow scheduled transactions, should that option be provided to user", true, "", 9, "AllowScheduled" )]
+    [BooleanField( "Scheduled Transactions", "Allow", "Don't Allow", 
+        "If the selected gateway(s) allow scheduled transactions, should that option be provided to user", true, "", 9, "AllowScheduled" )]
 
-    [BooleanField("Allow Impersonation", "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 10)]
+    [BooleanField( "Impersonation", "Allow (only use on an internal page used by staff)", "Don't Allow", 
+        "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 10)]
     [BooleanField( "Prompt for Phone", "Should the user be prompted for their phone number?", false, "", 11, "DisplayPhone" )]
     [BooleanField( "Prompt for Email", "Should the user be prompted for their email address?", true, "", 12, "DisplayEmail" )]
 
-    [MemoField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section?", true, @"
+    [MemoField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.", true, @"
 <p>
 Please confirm the information below. Once you have confirmed that the information is accurate click the 'Finish' button to complete your transaction. 
 </p>
 ", "Text Options", 13 )]
 
-    [MemoField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section?", true, @"
+    [MemoField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", true, @"
 <div class='alert alert-info'>
 By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to debit the amount above from my account. I acknowledge that I may 
 update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions. 
 </div>
 ", "Text Options", 14 )]
 
-    [MemoField( "Success Header", "The text (HTML) to display at the top of the confirmation section?", true, @"
+    [MemoField( "Success Header", "The text (HTML) to display at the top of the success section.", true, @"
 <p>
 Thank-you for your generous contribution.  Your support is helping {{ OrganizationName }} actively 
 achieve our mission.  We are so grateful for your commitment. 
 </p>
 ", "Text Options", 15 )]
 
-    [MemoField( "Success Footer", "The text (HTML) to display at the bottom of the confirmation section?", true, @"
+    [MemoField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", true, @"
 ", "Text Options", 16 )]
 
     #endregion
@@ -163,7 +166,7 @@ achieve our mission.  We are so grateful for your commitment.
 
             // If impersonation is allowed, and a valid person key was used, set the target to that person
             bool allowInpersonation = false;
-            if ( bool.TryParse( GetAttributeValue( "Allow Impersonation" ), out allowInpersonation ) && allowInpersonation )
+            if ( bool.TryParse( GetAttributeValue( "Impersonation" ), out allowInpersonation ) && allowInpersonation )
             {
                 string personKey = PageParameter( "Person" );
                 if ( !string.IsNullOrWhiteSpace( personKey ) )
@@ -335,7 +338,7 @@ achieve our mission.  We are so grateful for your commitment.
                 // Save amounts from controls to the viewstate list
                 foreach ( RepeaterItem item in rptAccountList.Items )
                 {
-                    var accountAmount = item.FindControl( "txtAccountAmount" ) as LabeledTextBox;
+                    var accountAmount = item.FindControl( "txtAccountAmount" ) as RockTextBox;
                     if ( accountAmount != null )
                     {
                         if ( SelectedAccounts.Count > item.ItemIndex )
@@ -355,7 +358,7 @@ achieve our mission.  We are so grateful for your commitment.
                 // Set the frequency date label based on if 'One Time' is selected or not
                 if ( btnFrequency.Items.Count > 0 )
                 {
-                    dtpStartDate.LabelText = btnFrequency.Items[0].Selected ? "When" : "First Gift";
+                    dtpStartDate.Label = btnFrequency.Items[0].Selected ? "When" : "First Gift";
                 }
 
                 // If there are both CC and ACH options, set the active tab based on the hidden field value that tracks the active tag
@@ -445,7 +448,7 @@ achieve our mission.  We are so grateful for your commitment.
             else
             {
                 SetPage( 0 );
-                ShowMessage( NotificationBoxType.Error, "Configuration Error", "Please check the configuration of this block and make sure a valid Credit Card and/or ACH Finacial Gateway has been selected." );
+                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Please check the configuration of this block and make sure a valid Credit Card and/or ACH Finacial Gateway has been selected." );
             }
             
         }
@@ -514,7 +517,7 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Error, "Oops!", errorMessage );
+                        ShowMessage( NotificationBoxType.Danger, "Oops!", errorMessage );
                     }
 
                     break;
@@ -528,7 +531,7 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Error, "Payment Error", errorMessage );
+                        ShowMessage( NotificationBoxType.Danger, "Payment Error", errorMessage );
                     }
 
                     break;
@@ -551,7 +554,7 @@ achieve our mission.  We are so grateful for your commitment.
             }
             else
             {
-                ShowMessage( NotificationBoxType.Error, "Payment Error", errorMessage );
+                ShowMessage( NotificationBoxType.Danger, "Payment Error", errorMessage );
             }
         }
 
@@ -575,7 +578,7 @@ achieve our mission.  We are so grateful for your commitment.
                 {
                     nbSaveAccount.Title = "Missing Informaton";
                     nbSaveAccount.Text = "A username and password are required when saving an account";
-                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                     nbSaveAccount.Visible = true;
                     return;
                 }
@@ -584,7 +587,7 @@ achieve our mission.  We are so grateful for your commitment.
                 {
                     nbSaveAccount.Title = "Invalid Username";
                     nbSaveAccount.Text = "The selected Username is already being used.  Please select a different Username";
-                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                     nbSaveAccount.Visible = true;
                     return;
                 }
@@ -593,7 +596,7 @@ achieve our mission.  We are so grateful for your commitment.
                 {
                     nbSaveAccount.Title = "Invalid Password";
                     nbSaveAccount.Text = "The password and password confirmation do not match";
-                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                     nbSaveAccount.Visible = true;
                     return;
                 }
@@ -653,7 +656,7 @@ achieve our mission.  We are so grateful for your commitment.
                     {
                         nbSaveAccount.Title = "Invalid Transaction";
                         nbSaveAccount.Text = "Sorry, the account information cannot be saved as there's not a valid transaction code to reference";
-                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                         nbSaveAccount.Visible = true;
                     }
                 }
@@ -662,7 +665,7 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 nbSaveAccount.Title = "Missing Account Name";
                 nbSaveAccount.Text = "Please enter a name to use for this account";
-                nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                 nbSaveAccount.Visible = true;
             }
         }
@@ -678,10 +681,10 @@ achieve our mission.  We are so grateful for your commitment.
             var selectedGuids = GetAttributeValues( "Accounts" ).Select( Guid.Parse ).ToList();
             bool showAll = !selectedGuids.Any();
 
-            bool allowOtherAccounts = true;
-            if ( !bool.TryParse( GetAttributeValue( "AllowOtherAccounts" ), out allowOtherAccounts ) )
+            bool additionalAccounts = true;
+            if ( !bool.TryParse( GetAttributeValue( "AdditionalAccounts" ), out additionalAccounts ) )
             {
-                allowOtherAccounts = true;
+                additionalAccounts = true;
             }
 
             SelectedAccounts = new List<AccountItem>();
@@ -710,7 +713,7 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                     else
                     {
-                        if ( allowOtherAccounts )
+                        if ( additionalAccounts )
                         {
                             AvailableAccounts.Add( accountItem );
                         }
@@ -1432,7 +1435,7 @@ achieve our mission.  We are so grateful for your commitment.
 
         // Hide or show a div based on selection of checkbox
         $('input:checkbox.toggle-input').unbind('click').on('click', function () {{
-            $(this).parents('div:first').next('.toggle-content').slideToggle();
+            $(this).parents('div.form-group:first').next('.toggle-content').slideToggle();
         }});
 
         // Disable the submit button as soon as it's clicked to prevent double-clicking

@@ -39,7 +39,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The label text.
         /// </value>
-        public string LabelText
+        public string Label
         {
             get { return _label.Text; }
             set { _label.Text = value; }
@@ -308,20 +308,16 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            bool renderLabel = !string.IsNullOrEmpty( LabelText );
+            bool renderLabel = !string.IsNullOrEmpty( Label );
 
             if ( renderLabel )
             {
                 writer.AddAttribute( "class", "control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                _label.AddCssClass( "control-label" );
-
-                _label.RenderControl( writer );
-
-                writer.AddAttribute( "class", "controls" );
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.RenderBeginTag(HtmlTextWriterTag.Label);
+                writer.Write(_label.Text);
+                writer.RenderEndTag();
             }
 
             if ( Required )
@@ -336,11 +332,11 @@ namespace Rock.Web.UI.Controls
             if ( this.Enabled )
             {
                 string controlHtmlFormatStart = @"
-        <div id='{0}' class='picker picker-select' > 
+        <div id='{0}' class='picker picker-select picker-person' > 
             <a class='picker-label' href='#'>
                 <i class='icon-user'></i>
                 <span id='selectedPersonLabel_{0}'>{1}</span>
-                <b class='caret'></b>
+                <b class='caret pull-right'></b>
             </a>
 ";
 
@@ -360,9 +356,12 @@ namespace Rock.Web.UI.Controls
           <div class='picker-menu dropdown-menu'>
 
              <h4>Search</h4>
-             <input id='personPicker_{0}' type='text' class='picker-search' />
+             <input id='personPicker_{0}' type='text' class='picker-search form-control input-sm' />
+
+             <hr />             
+
              <h4>Results</h4>
-             <hr />
+             
              <ul class='picker-select' id='personPickerItems_{0}'>
              </ul>
              <div class='picker-actions'>
@@ -400,8 +399,6 @@ namespace Rock.Web.UI.Controls
 
             if ( renderLabel )
             {
-                writer.RenderEndTag();
-
                 writer.RenderEndTag();
             }
         }
