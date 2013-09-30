@@ -37,7 +37,7 @@ namespace Rock.Data
         /// <param name="systemGuidType">The syste m_ unique identifier.</param>
         public DefinedValueAttribute( Type systemGuidType )
         {
-            var info = systemGuidType.GetField( "GuidValue");
+            var info = systemGuidType.GetField( "Guid");
             DefinedTypeGuid = (Guid)info.GetValue( null );
         }
 
