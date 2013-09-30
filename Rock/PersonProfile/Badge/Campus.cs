@@ -47,7 +47,7 @@ namespace Rock.PersonProfile.Badge
             if ( ParentPersonBlock != null )
             {
                 // Campus is associated with the family group(s) person belongs to.
-                var families = ParentPersonBlock.PersonGroups( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.GuidValue );
+                var families = ParentPersonBlock.PersonGroups( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.Guid );
                 if ( families != null )
                 {
                     var label = new HighlightLabel();

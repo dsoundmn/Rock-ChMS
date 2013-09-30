@@ -21,7 +21,12 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Boolean field type
         /// </summary>
-        public const string BOOLEAN = "1EDAFDED-DFE6-4334-B019-6EECBA89E05A";
+        public class BOOLEAN : SYSTEM_GUID_BASE
+        {
+            public const string GuidAsUpperString = "1EDAFDED-DFE6-4334-B019-6EECBA89E05A";
+            public static readonly Guid Guid = new Guid( GuidAsUpperString );
+        }
+        
 
         /// <summary>
         /// Date field type

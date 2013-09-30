@@ -224,7 +224,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         private void BindFamilies()
         {
-            Guid familyGroupGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.GuidValue;
+            Guid familyGroupGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.Guid;
 
             var memberService = new GroupMemberService();
             var families = memberService.Queryable()

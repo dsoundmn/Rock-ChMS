@@ -795,7 +795,7 @@ achieve our mission.  We are so grateful for your commitment.
                             var group = new Group();
                             group.Members.Add( groupMember );
                             group.Name = person.LastName + " Family";
-                            group.GroupType = new GroupTypeService().Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.GuidValue );
+                            group.GroupType = new GroupTypeService().Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.Guid );
 
                             var groupLocation = new GroupLocation();
                             var location = new LocationService().Get(

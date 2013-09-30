@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( int.TryParse( PageParameter( "FamilyId" ), out familyId ) )
             {
                 _family = new GroupService().Get( familyId );
-                if ( _family != null && _family.GroupType.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.GuidValue )
+                if ( _family != null && _family.GroupType.Guid == Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.Guid )
                 {
                     nbNotice.Heading = "Invalid Family";
                     nbNotice.Text = "Sorry, but the group selected is not a Family group";

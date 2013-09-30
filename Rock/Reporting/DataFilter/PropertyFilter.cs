@@ -293,7 +293,7 @@ namespace Rock.Reporting.DataFilter
                             {
                                 switch ( attribute.FieldType.Guid.ToString().ToUpper() )
                                 {
-                                    case SystemGuid.FieldType.BOOLEAN:
+                                    case SystemGuid.FieldType.BOOLEAN.GuidAsUpperString:
                                         ddlSingleSelect.Items.Add( new ListItem( "True", "True" ) );
                                         ddlSingleSelect.Items.Add( new ListItem( "False", "False" ) );
                                         break;
@@ -730,7 +730,7 @@ namespace Rock.Reporting.DataFilter
 
                     switch ( attribute.FieldType.Guid.ToString().ToUpper() )
                     {
-                        case SystemGuid.FieldType.BOOLEAN:
+                        case SystemGuid.FieldType.BOOLEAN.GuidAsUpperString:
                             entityProperty = new EntityField( attribute.Name, FieldKind.Attribute, null, 1, attribute.Id );
                             entityProperty.FilterFieldType = SystemGuid.FieldType.SINGLE_SELECT;
                             break;

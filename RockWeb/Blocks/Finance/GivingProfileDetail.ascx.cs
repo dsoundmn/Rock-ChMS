@@ -477,7 +477,7 @@ Thank you for your generosity! You just gave a total of {{ TotalContribution }} 
                     homeAddress.LocationTypeValueId = homeLocationType.Id;
                     locationService.Save( homeAddress, person.Id );
 
-                    GroupType familyGroupType = new GroupTypeService().Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.GuidValue );
+                    GroupType familyGroupType = new GroupTypeService().Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.Guid );
                     var familyGroupList = groupMemberService.Queryable().Where( g => g.PersonId == person.Id
                         && g.Group.GroupType.Guid == familyGroupType.Guid ).Select( g => g.Group ).ToList();
 

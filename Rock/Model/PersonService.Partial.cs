@@ -250,7 +250,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<Group> GetFamilies( Person person )
         {
-            Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.GuidValue;
+            Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.Guid;
 
             return new GroupMemberService().Queryable()
                 .Where( m => m.PersonId == person.Id && m.Group.GroupType.Guid == familyGuid )
@@ -266,7 +266,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<GroupMember> GetFamilyMembers( Person person, bool includeSelf = false )
         {
-            Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.GuidValue;
+            Guid familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.Guid;
 
             return new GroupMemberService().Queryable()
                 .Where( m => m.PersonId == person.Id && m.Group.GroupType.Guid == familyGuid)

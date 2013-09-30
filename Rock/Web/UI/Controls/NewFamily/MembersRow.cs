@@ -220,7 +220,7 @@ namespace Rock.Web.UI.Controls
                 {
                     var familyRoles = new Dictionary<int, string>();
                     new GroupTypeService()
-                        .Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.GuidValue )
+                        .Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.Guid )
                         .Roles.ToList().ForEach( r => familyRoles.Add(r.Id, r.Name));
                     HttpContext.Current.Items[FAMILY_ROLE_KEY] = familyRoles;
                     return familyRoles;

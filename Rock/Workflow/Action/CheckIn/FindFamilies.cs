@@ -44,7 +44,7 @@ namespace Rock.Workflow.Action.CheckIn
 
                         foreach ( var person in personService.GetByPhonePartial( checkInState.CheckIn.SearchValue ) )
                         {
-                            foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == SystemGuid.GroupType.GROUPTYPE_FAMILY.GuidValue ).Select( m => m.Group ) )
+                            foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == SystemGuid.GroupType.GROUPTYPE_FAMILY.Guid ).Select( m => m.Group ) )
                             {
                                 var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
                                 if ( family == null )

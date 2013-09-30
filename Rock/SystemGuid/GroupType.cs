@@ -25,7 +25,8 @@ namespace Rock.SystemGuid
         /// </summary>
         public class GROUPTYPE_FAMILY : SYSTEM_GUID_BASE
         {
-            public static readonly Guid GuidValue = new Guid("790E3215-3B10-442B-AF69-616C0DCB998E");
+            public const string GuidAsUpperString = "790E3215-3B10-442B-AF69-616C0DCB998E";
+            public static readonly Guid Guid = new Guid(GuidAsUpperString);
         }
 
         /// <summary>

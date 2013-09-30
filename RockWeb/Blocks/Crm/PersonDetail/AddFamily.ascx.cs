@@ -326,7 +326,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             familyMemberRow.RequireGender = _requireGender;
             familyMemberRow.RequireGrade = _requireGrade;
 
-            var familyGroupType = new GroupTypeService().Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.GuidValue );
+            var familyGroupType = new GroupTypeService().Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.Guid );
             if ( familyGroupType != null && familyGroupType.DefaultGroupRoleId.HasValue )
             {
                 familyMemberRow.RoleId = familyGroupType.DefaultGroupRoleId;
@@ -381,7 +381,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             using ( new UnitOfWorkScope() )
                             {
                                 var groupTypeService = new GroupTypeService();
-                                var familyGroupType = groupTypeService.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.GuidValue );
+                                var familyGroupType = groupTypeService.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.Guid );
 
                                 if ( familyGroupType != null )
                                 {
