@@ -25,6 +25,7 @@ namespace Rock.Web.UI.Controls
         private Panel _dialogPanel;
 
         private Panel _headerPanel;
+        private Panel _headerCustomContent;
         private HtmlGenericControl _closeLink;
         private HtmlGenericControl _titleH3;
         private LiteralControl _title;
@@ -108,7 +109,26 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 return _contentPanel;
             }
+        }
 
+        /// <summary>
+        /// A section of the header where a developer can add additional controls
+        /// </summary>
+        [
+            DesignerSerializationVisibility( DesignerSerializationVisibility.Content ),
+            NotifyParentProperty( true ),
+            PersistenceMode( PersistenceMode.InnerProperty ),
+            Category( "Data" ),
+            DefaultValue( typeof( Panel ), "" ),
+            Description( "The custom content area of the header." )
+        ]
+        public Panel HeaderCustomContent
+        {
+            get
+            {
+                EnsureChildControls();
+                return _headerCustomContent;
+            }
         }
 
         /// <summary>
@@ -151,6 +171,10 @@ namespace Rock.Web.UI.Controls
             _closeLink.Attributes.Add( "HRef", "#" );
             _closeLink.Attributes.Add( "class", "close" );
             _closeLink.InnerHtml = "&times;";
+
+            _headerCustomContent = new Panel();
+            _headerCustomContent.ID = "headerCustomContent";
+            _headerPanel.Controls.Add( _headerCustomContent );
 
             _titleH3 = new HtmlGenericControl( "h3" );
             _titleH3.AddCssClass( "modal-title" );

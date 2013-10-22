@@ -1,69 +1,47 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="false" CodeFile="HtmlContent.ascx.cs" Inherits="RockWeb.Blocks.Cms.HtmlContent" %>
-<%@ Register TagPrefix="asp" Namespace="AjaxControlToolkit" Assembly="AjaxControlToolkit"%>
 
-<script type="text/javascript">
-    Sys.Application.add_load(function () {
-        Rock.controls.htmlContentEditor.initialize({
-            blockId: <%= CurrentBlock.Id %>,
-            behaviorId: '<%= mpeContent.BehaviorID %>',
-            hasBeenModified: <%= HtmlContentModified.ToString().ToLower() %>,
-            versionId: '<%= hfVersion.ClientID %>',
-            startDateId: '<%= tbStartDate.ClientID %>',
-            expireDateId: '<%= tbExpireDate.ClientID %>',
-            ckEditorId: '<%= edtHtmlContent.ClientID %>',
-            approvalId: '<%= cbApprove.ClientID %>'
-        });
-    });
-</script>
-<asp:UpdatePanel runat="server" class="html-content-block">
-<ContentTemplate>
+<link href="../../Themes/RockChMS/Styles/theme.css" rel="stylesheet" visible="false" />
 
-    <asp:Literal ID="lPreText" runat="server"></asp:Literal><asp:Literal ID="lHtmlContent" runat="server"></asp:Literal><asp:Literal ID="lPostText" runat="server"></asp:Literal>
+<asp:UpdatePanel runat="server" ID="upPanel">
+    <ContentTemplate>
 
-    <asp:HiddenField ID="hfAction" runat="server" />
-    <asp:Button ID="btnDefault" runat="server" Text="Show" style="display:none"/>
-    <asp:Panel ID="pnlContentEditor" runat="server" CssClass="rock-modal htmlcontent-dialog" style="display:none">
+        <%-- View Panel --%>
+        <asp:Panel ID="pnlView" runat="server">
+            <asp:Literal ID="lPreText" runat="server" />
+            <asp:Literal ID="lHtmlContent" runat="server" />
+            <asp:Literal ID="lPostText" runat="server" />
+        </asp:Panel>
 
-        <div class="modal-header">
-            <a id="aClose" runat="server" href="#" class="close">&times;</a>
-            <h3 class="modal-title">HTML Content</h3>
-            <asp:PlaceHolder ID="phCurrentVersion" runat="server"><a id="html-content-version-<%=CurrentBlock.Id %>" 
-                class="label label-default pull-right">Version <asp:Literal ID="lVersion" runat="server"></asp:Literal></a></asp:PlaceHolder>
-        </div>
+        <%-- Edit Panel --%>
+        <asp:Panel ID="pnlEdit" runat="server" Visible="false">
+            <Rock:ModalDialog ID="mdEdit" runat="server" OnSaveClick="btnSave_Click" Title="Edit Html" PopupDragHandleControlID="edtHtml">
+                <HeaderCustomContent>
+                    <div class="pull-right">
+                        <table class="table-condensed">
+                            <tr>
+                                <td>
+                                    <asp:Literal ID="lCurrentVersion" runat="server" Text="Version: 00" />
+                                </td>
+                                <td>
+                                    <asp:LinkButton ID="btnShowVersionGrid" runat="server" Text="History" OnClick="btnShowVersionGrid_Click" />
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </HeaderCustomContent>
+                <Content>
+                    <fieldset>
+                        <div class="float-right">
+                            <Rock:RockCheckBox ID="chkApproved" runat="server" Text="Approve" />
+                        </div>
+                        <Rock:DateRangePicker ID="pDateRange" runat="server" Label="Display Date Range" />
+                        
 
-        <div id="html-content-versions-<%=CurrentBlock.Id %>" style="display:none">
-            <div class="modal-body">
-                <Rock:Grid ID="rGrid" runat="server" AllowPaging="false" >
-                    <Columns>
-                        <asp:TemplateField SortExpression="Version" HeaderText="Version">
-                            <ItemTemplate>
-                                <a data-html-id='<%# Eval("Id") %>' class="html-content-show-version-<%=CurrentBlock.Id %>" href="#">Version <%# Eval("Version") %></a>
-                            </ItemTemplate>
-                        </asp:TemplateField>
-                        <asp:BoundField DataField="ModifiedDateTime" HeaderText="Modified" SortExpression="ModifiedDateTime" />
-                        <asp:BoundField DataField="ModifiedByPerson" HeaderText="By" SortExpression="ModifiedByPerson" />
-                        <Rock:BoolField DataField="Approved" HeaderText="Approved" SortExpression="Approved" />
-                        <asp:BoundField DataField="ApprovedByPerson" HeaderText="By" SortExpression="ApprovedByPerson" />
-                        <asp:BoundField DataField="StartDateTime" DataFormatString="MM/dd/yy" HeaderText="Start" SortExpression="StartDateTime" />
-                        <asp:BoundField DataField="ExpireDateTime" DataFormatString="MM/dd/yy" HeaderText="Expire" SortExpression="ExpireDateTime" />
-                    </Columns>
-                </Rock:Grid>
-            </div>
-            <div class="modal-footer">
-                <button id="html-content-versions-cancel-<%=CurrentBlock.Id %>" class="btn">Cancel</button>
-            </div>
-        </div>
+                        <Rock:HtmlEditor ID="edtHtml" runat="server" ResizeMaxWidth="720" />
 
-        <div id="html-content-edit-<%=CurrentBlock.Id %>">
-            <asp:panel ID="pnlVersioningHeader" runat="server" class="htmlcontent-edit-header">
-                <asp:HiddenField ID="hfVersion" runat="server" />
-                Start: <asp:TextBox ID="tbStartDate" runat="server" CssClass="date-picker"></asp:TextBox>
-                Expire: <asp:TextBox ID="tbExpireDate" runat="server" CssClass="date-picker"></asp:TextBox>
-                <div class="html-content-approve"><asp:CheckBox ID="cbApprove" runat="server" TextAlign="Right" Text="Approve" /></div>
-            </asp:panel>
-            <div class="modal-body">
-                <Rock:CKEditorControl ID="edtHtmlContent" runat="server" Visible="false"/>
+                    </fieldset>
 
+<<<<<<< Updated upstream
                 <div class="">
                     <asp:CheckBox ID="cbOverwriteVersion" runat="server" TextAlign="Right" Text="don't save a new version" />
                 </div>
@@ -74,15 +52,53 @@
                 <asp:LinkButton ID="lbOk" runat="server" cssclass="btn btn-primary" Text="Save" />
             </div>
         </div>
+=======
+                    <Rock:RockCheckBox ID="ckDontSaveNewVersion" runat="server" Text="don't save a new version" />
+                    <asp:LinkButton ID="btnPreview" runat="server" Text="Preview" CssClass="btn btn-xs pull-right" CausesValidation="false" OnClick="btnPreview_Click" />
+                </Content>
+            </Rock:ModalDialog>
+        </asp:Panel>
+>>>>>>> Stashed changes
 
-        <asp:Button ID="btnSave" runat="server" OnClick="btnSave_Click" Text="Save" style="display: none;" CssClass="save-button" />
 
-    </asp:Panel>
-    
-    <asp:ModalPopupExtender ID="mpeContent" runat="server" BackgroundCssClass="modal-backdrop"  
-        PopupControlID="pnlContentEditor" CancelControlID="lbCancel" OkControlID="lbOk" TargetControlID="btnDefault"></asp:ModalPopupExtender>
+        <asp:Panel ID="pnlVersionHistory" runat="server" Visible="false">
+        </asp:Panel>
 
-</ContentTemplate>
+        <%-- Preview Dialog --%>
+        <asp:Panel ID="pnlPreview" runat="server" Visible="false">
+            <Rock:ModalDialog ID="mdPreview" runat="server" Title="Preview Html">
+                <Content>
+                    <div class='scroll-container'>
+                        <div class='scrollbar'>
+                            <div class='track'>
+                                <div class='thumb'>
+                                    <div class='end'></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class='viewport'>
+                            <div class='overview'>
+                                <asp:Literal ID="lPreTextPreview" runat="server" />
+                                <asp:Literal ID="lHtmlContentPreview" runat="server" />
+                                <asp:Literal ID="lPostTextPreview" runat="server" />
+                            </div>
+                        </div>
+                    </div>
+                </Content>
+            </Rock:ModalDialog>
+            <script>
+                // help the scroll-container size correctly when first loaded
+                Sys.Application.add_load(function () {
+                    $('.scroll-container').tinyscrollbar({ size: 150 });
+                    $('.scroll-container').on('mouseenter', function () {
+                        $('.scroll-container').tinyscrollbar_update('relative');
+                    });
+                });
+            </script>
+        </asp:Panel>
+
+
+    </ContentTemplate>
 </asp:UpdatePanel>
 
 
