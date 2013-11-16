@@ -37,7 +37,7 @@
 
     <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="panel panel-default">
         <div class="panel-body">
-            <asp:ValidationSummary runat="server" CssClass="alert alert-danger" />
+            <asp:ValidationSummary runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
             <div class="banner">
                 <h1><asp:Literal ID="lProperties" runat="server"></asp:Literal></h1>
@@ -49,7 +49,7 @@
 
             <div class="actions">
                 <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" onclick="btnSave_Click" />
-                <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default" CausesValidation="false" OnClick="btnCancel_Click" />
+                <asp:LinkButton id="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
             </div>
     </asp:Panel>

@@ -20,12 +20,11 @@
         </Rock:GridFilter>
         
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-        <Rock:Grid ID="rGridAccount" runat="server" AllowSorting="true" RowItemText="account" OnRowSelected="rGridAccount_Edit">
+        <Rock:Grid ID="rGridAccount" runat="server" AllowSorting="true" RowItemText="account" OnRowSelected="rGridAccount_Edit" DescriptionField="Description">
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                 <asp:BoundField DataField="PublicName" HeaderText="Public Name" SortExpression="PublicName" />
-                <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
                 <asp:BoundField DataField="IsTaxDeductible" HeaderText="Tax Deductible" SortExpression="IsTaxDeductible" />
                 <asp:BoundField DataField="IsActive" HeaderText="Active" SortExpression="IsActive" />
                 <asp:BoundField DataField="StartDate" HeaderText="Starts On" SortExpression="StartDate" DataFormatString="{0:d}" />
@@ -42,7 +41,7 @@
 
             <div class="banner"><h1><asp:Literal ID="lAction" runat="server"></asp:Literal></h1></div>
 
-            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
             <fieldset>
 
                 <div class="row">
@@ -84,7 +83,7 @@
 
             <div class="actions">
                 <asp:LinkButton ID="btnSaveAccount" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveAccount_Click" />
-                <asp:LinkButton ID="btnCancelAccount" runat="server" Text="Cancel" CssClass="btn btn-default" CausesValidation="false" OnClick="btnCancel_Click" />
+                <asp:LinkButton ID="btnCancelAccount" runat="server" Text="Cancel" CssClass="btn btn-link" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 
         </div>

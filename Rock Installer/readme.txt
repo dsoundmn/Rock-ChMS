@@ -21,12 +21,13 @@ CREATING INSTALLER ZIP FILE
 
 
 1. Pull latest from GitHub
-2. Build solution in Visual Studio
+2. Build solution in Visual Studio (build in Release mode)
 3. Edit web.config.  Delete the line:   <add key="AutoMigrateDatabase" value="False"/>
 4. Edit web.config. set RunJobsInIISContext = true
 5. Delete mockup images under 'Assets'
-6. Delete files under Logs
-7. Zip up the RockWeb directory leaving out the following files:
+6. Turn off debug <compilation debug="false"…
+7. Delete files under Logs
+8. Zip up the RockWeb directory leaving out the following files:
 	* web.ConnectionStrings.config  !IMPORTANT!
 	* .gitignore
 	* .DS_Store (might just be on my Mac)

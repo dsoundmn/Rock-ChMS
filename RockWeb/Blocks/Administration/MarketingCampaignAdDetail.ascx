@@ -4,7 +4,7 @@
     <ContentTemplate>
         <!-- Ad Details Controls -->
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
-            <asp:ValidationSummary ID="ValidationSummary2" runat="server" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="ValidationSummary2" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
             <asp:HiddenField ID="hfMarketingCampaignId" runat="server" />
             <asp:HiddenField ID="hfMarketingCampaignAdId" runat="server" />
             <asp:UpdatePanel ID="upAdApproval" runat="server">
@@ -44,7 +44,7 @@
                 </div>
                 <div class="actions">
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click"></asp:LinkButton>
-                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClick="btnCancel_Click" CausesValidation="false"></asp:LinkButton>
                 </div>
             </fieldset>
         </asp:Panel>

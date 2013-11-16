@@ -14,7 +14,7 @@
                 <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
             </div>
             
-            <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-danger" />
+            <asp:ValidationSummary ID="vsDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
             <div id="pnlEditDetails" runat="server">
 
@@ -110,7 +110,7 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlWorkflowTypeAttributes" runat="server" Visible="false">
-            <Rock:AttributeEditor ID="edtWorkflowTypeAttributes" runat="server" OnSaveClick="btnSaveWorkflowTypeAttribute_Click" OnCancelClick="btnCancelWorkflowTypeAttribute_Click" />
+            <Rock:AttributeEditor ID="edtWorkflowTypeAttributes" runat="server" OnSaveClick="btnSaveWorkflowTypeAttribute_Click" OnCancelClick="btnCancelWorkflowTypeAttribute_Click" ValidationGroup="Attribute" />
         </asp:Panel>
         <script>
 

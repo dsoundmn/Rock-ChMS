@@ -68,7 +68,7 @@
                         $hfItemNames.val(selectedNames.join(','));
                         $spanNames.text(selectedNames.join(', '));
                     })
-                    .on('rockTree:open rockTree:close', function () {
+                    .on('rockTree:expand rockTree:collapse', function () {
                         self.updateScrollbar();
                     });
 
@@ -103,7 +103,7 @@
                 });
             },
             updateScrollbar: function () {
-                var $container = $('#' + this.controlId).find('.scroll-container'),
+                var $container = $('#' + this.options.controlId).find('.scroll-container'),
                     $dialog = $('#modal-scroll-container'),
                     dialogTop,
                     pickerTop,

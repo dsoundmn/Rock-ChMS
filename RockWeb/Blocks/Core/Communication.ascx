@@ -24,7 +24,7 @@
             </asp:Repeater>
         </ul>
         
-        <asp:ValidationSummary ID="ValidationSummary" runat="server" CssClass="alert alert-danger" />
+        <asp:ValidationSummary ID="ValidationSummary" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
         <div class="form-group">
             <div class="control-label">
@@ -54,10 +54,10 @@
         <div class="actions">
             <asp:LinkButton ID="btnSubmit" runat="server" Text="Submit" CssClass="btn btn-primary" OnClick="btnSubmit_Click" />
             <asp:LinkButton ID="btnApprove" runat="server" Text="Approve" CssClass="btn btn-primary" OnClick="btnApprove_Click" />
-            <asp:LinkButton ID="btnDeny" runat="server" Text="Deny" CssClass="btn btn-default" OnClick="btnDeny_Click" />
-            <asp:LinkButton ID="btnSave" runat="server" Text="Save as Draft" CssClass="btn btn-default" OnClick="btnSave_Click" />
-            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel Send" CssClass="btn btn-default" OnClick="btnCancel_Click" />
-            <asp:LinkButton ID="btnCopy" runat="server" Text="Copy Communication" CssClass="btn btn-default" OnClick="btnCopy_Click" CausesValidation="false" />
+            <asp:LinkButton ID="btnDeny" runat="server" Text="Deny" CssClass="btn btn-link" OnClick="btnDeny_Click" />
+            <asp:LinkButton ID="btnSave" runat="server" Text="Save as Draft" CssClass="btn btn-link" OnClick="btnSave_Click" />
+            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel Send" CssClass="btn btn-link" OnClick="btnCancel_Click" />
+            <asp:LinkButton ID="btnCopy" runat="server" Text="Copy Communication" CssClass="btn btn-link" OnClick="btnCopy_Click" CausesValidation="false" />
         </div>
 
         </asp:Panel>

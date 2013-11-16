@@ -58,9 +58,15 @@ namespace Rock.Web.UI
             set
             {
                 _currentPage = value;
+
                 HttpContext.Current.Items.Add( "Rock:PageId", _currentPage.Id );
                 HttpContext.Current.Items.Add( "Rock:LayoutId", _currentPage.LayoutId );
                 HttpContext.Current.Items.Add( "Rock:SiteId", _currentPage.Layout.SiteId );
+
+                if (this.Master is RockMasterPage)
+                {
+                    ( (RockMasterPage)this.Master ).CurrentPage = value;
+                }
             }
         }
         private PageCache _currentPage = null;
@@ -324,6 +330,10 @@ namespace Rock.Web.UI
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
             _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
 
+            // add Google Maps API
+            var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
+            _scriptManager.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?key={0}&sensor=false&libraries=drawing", googleAPIKey ) ) );
+
             // Recurse the page controls to find the rock page title and zone controls
             Page.Trace.Warn( "Recursing layout to find zones" );
             Zones = new Dictionary<string, KeyValuePair<string, Zone>>();
@@ -401,6 +411,12 @@ namespace Rock.Web.UI
             // If a PageInstance exists
             if ( CurrentPage != null )
             {
+                // If there's a master page, update it's reference to Current Page
+                if ( this.Master is RockMasterPage )
+                {
+                    ( (RockMasterPage)this.Master ).CurrentPage = CurrentPage;
+                }
+
                 // check if page should have been loaded via ssl
                 Page.Trace.Warn( "Checking for SSL request" );
                 if ( !Request.IsSecureConnection && CurrentPage.RequiresEncryption )
@@ -573,8 +589,8 @@ namespace Rock.Web.UI
                                 catch ( Exception ex )
                                 {
                                     HtmlGenericControl div = new HtmlGenericControl( "div" );
-                                    div.Attributes.Add( "class", "alert-message block-message error" );
-                                    div.InnerHtml = string.Format( "Error Loading Block:<br/><br/><strong>{0}</strong>", ex.Message );
+                                    div.Attributes.Add( "class", "alert alert-danger" );
+                                    div.InnerHtml = string.Format( "<h4>Error Loading Block</h4><strong>{0}</strong> {1}", block.Name, ex.Message );
                                     control = div;
 
                                     if ( this.IsPostBack )
@@ -893,17 +909,17 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Dims the other blocks.
+        /// Hides any secondary blocks.
         /// </summary>
         /// <param name="caller">The caller.</param>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void DimOtherBlocks( RockBlock caller, bool dimmed )
+        /// <param name="hidden">if set to <c>true</c> [hidden].</param>
+        public void HideSecondaryBlocks( RockBlock caller, bool hidden )
         {
-            foreach ( IDimmableBlock dimmableBlock in this.RockBlocks.Where( a => a is IDimmableBlock ) )
+            foreach ( ISecondaryBlock secondaryBlock in this.RockBlocks.Where( a => a is ISecondaryBlock ) )
             {
-                if ( dimmableBlock != caller )
+                if ( secondaryBlock != caller )
                 {
-                    dimmableBlock.SetDimmed( dimmed );
+                    secondaryBlock.SetVisible( !hidden );
                 }
             }
         }

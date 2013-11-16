@@ -1,18 +1,18 @@
 -- drop/create the function
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[ufn_person_group_to_person_names]') and [type] = 'TF')
-BEGIN
-    DROP FUNCTION [dbo].[ufn_person_group_to_person_names];
-END
-GO
+if exists (select * from sys.objects where object_id = OBJECT_ID(N'[dbo].[ufn_person_group_to_person_names]') and [type] = 'TF')
+begin
+    drop function [dbo].[ufn_person_group_to_person_names];
+end
+go
 
-CREATE FUNCTION [dbo].[ufn_person_group_to_person_names] 
+create function [dbo].[ufn_person_group_to_person_names] 
 ( 
 @personId int, -- NULL means generate person names from Group Members. NOT-NULL means just get FullName from Person
 @groupId int
 )
-RETURNS @personNamesTable TABLE ( PersonNames varchar(max))
-AS
-BEGIN
+returns @personNamesTable table ( PersonNames varchar(max))
+as
+begin
     declare @personNames varchar(max); 
     declare @adultLastNameCount int;
     declare @groupFirstNames varchar(max) = '';
@@ -20,7 +20,7 @@ BEGIN
     declare @groupAdultFullNames varchar(max) = '';
     declare @groupNonAdultFullNames varchar(max) = '';
     declare @groupMemberTable table (LastName varchar(max), FirstName varchar(max), FullName varchar(max), GroupRoleGuid uniqueidentifier );
-    declare @GROUPROLE_FAMILY_MEMBER_ADULT uniqueidentifier = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42';
+    declare @GROUPTYPEROLE_FAMILY_MEMBER_ADULT uniqueidentifier = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42';
 
     if (@personId is not null) 
     begin
@@ -40,7 +40,7 @@ BEGIN
         on 
             [p].[Id] = [gm].[PersonId] 
         join
-            [GroupRole] [gr]
+            [GroupTypeRole] [gr]
         on 
             [gm].[GroupRoleId] = [gr].[Id]
         where 
@@ -53,7 +53,7 @@ BEGIN
         from 
             @groupMemberTable
         where
-            [GroupRoleGuid] = @GROUPROLE_FAMILY_MEMBER_ADULT;  
+            [GroupRoleGuid] = @GROUPTYPEROLE_FAMILY_MEMBER_ADULT;  
 
         if @adultLastNameCount > 0 
         begin
@@ -64,7 +64,7 @@ BEGIN
             from      
                 @groupMemberTable
             where
-                [GroupRoleGuid] = @GROUPROLE_FAMILY_MEMBER_ADULT;
+                [GroupRoleGuid] = @GROUPTYPEROLE_FAMILY_MEMBER_ADULT;
 
             -- cleanup the trailing ' &'s
             if len(@groupFirstNames) > 2 begin
@@ -95,12 +95,12 @@ BEGIN
 
         if (@adultLastNameCount = 1)
         begin
-            -- just one lastname and at least one adult. Get the Person Names portion of the address in the format "<MaleAdult> & <FemaleAdult> <LastName>"
+            -- just one lastname and at least one adult. Get the Person Names portion of the address in the format <MaleAdult> & <FemaleAdult> <LastName>
             set @personNames = @groupFirstNames + ' ' + @groupLastName;
         end
         else if (@adultLastNameCount = 0)
         begin
-             -- no adults in family, list all members of the family in "Fullname & FullName & ..." format
+             -- no adults in family, list all members of the family in 'Fullname & FullName & ...' format
             set @personNames = @groupNonAdultFullNames;
         end
         else
@@ -113,5 +113,5 @@ BEGIN
     insert into @personNamesTable ( [PersonNames] ) values ( @personNames);
 
   return
-END
-GO
+end
+go

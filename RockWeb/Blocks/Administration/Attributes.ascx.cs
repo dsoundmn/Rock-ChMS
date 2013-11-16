@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Administration
         protected string _entityQualifierColumn = string.Empty;
         protected string _entityQualifierValue = string.Empty;
         protected bool _displayValueEdit = false;
+
         protected int? _entityId = null;
 
         private bool _canConfigure = false;
@@ -90,11 +91,11 @@ namespace RockWeb.Blocks.Administration
                 rGrid.RowDataBound += rGrid_RowDataBound;
 
                 rGrid.Columns[1].Visible = !_configuredType;
-                rGrid.Columns[8].Visible = !_displayValueEdit;
+                rGrid.Columns[7].Visible = !_displayValueEdit;
+                rGrid.Columns[8].Visible = _displayValueEdit;
                 rGrid.Columns[9].Visible = _displayValueEdit;
-                rGrid.Columns[10].Visible = _displayValueEdit;
 
-                SecurityField securityField = rGrid.Columns[11] as SecurityField;
+                SecurityField securityField = rGrid.Columns[10] as SecurityField;
                 securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
 
                 modalDetails.SaveClick += modalDetails_SaveClick;
@@ -108,17 +109,9 @@ namespace RockWeb.Blocks.Administration
 
                 if ( !_configuredType )
                 {
-                    ddlEntityType.Items.Clear();
-                    ddlEntityType.Items.Add( new ListItem( "None (Global Attributes)", None.IdValue ) );
-
-                    ddlAttrEntityType.Items.Clear();
-                    ddlAttrEntityType.Items.Add( new ListItem( "None (Global Attribute)", None.IdValue ) );
-
-                    new EntityTypeService().GetEntityListItems().ForEach( l =>
-                    {
-                        ddlEntityType.Items.Add( l );
-                        ddlAttrEntityType.Items.Add( l );
-                    } );
+                    var entityTypeList = new EntityTypeService().GetEntities().ToList();
+                    ddlEntityType.EntityTypes = entityTypeList;
+                    ddlAttrEntityType.EntityTypes = entityTypeList;
                 }
 
                 BindFilter();
@@ -137,10 +130,21 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            if ( !Page.IsPostBack && _canConfigure )
+            if ( !Page.IsPostBack )
             {
-                BindGrid();
+                if ( _canConfigure )
+                {
+                    BindGrid();
+                }
             }
+            else
+            {
+                if ( !string.IsNullOrWhiteSpace( hfIdValues.Value ) )
+                {
+                    modalDetails.Show();
+                }
+            }
+
 
             base.OnLoad( e );
         }
@@ -348,12 +352,6 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
-                Literal lDescription = e.Row.FindControl( "lDescription" ) as Literal;
-                if ( lDescription != null )
-                {
-                    lDescription.Text = attribute.Description.Truncate( 100 );
-                }
-
                 if ( _displayValueEdit )
                 {
                     Literal lValue = e.Row.FindControl( "lValue" ) as Literal;
@@ -367,7 +365,7 @@ namespace RockWeb.Blocks.Administration
                         }
                         else
                         {
-                            lValue.Text = string.Format( "<span class='muted'>{0}</span>", fieldType.Field.FormatValue( lValue, attribute.DefaultValue, attribute.QualifierValues, true ) );
+                            lValue.Text = string.Format( "<span class='text-muted'>{0}</span>", fieldType.Field.FormatValue( lValue, attribute.DefaultValue, attribute.QualifierValues, true ) );
                         }
                     }
                 }
@@ -389,66 +387,23 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            using ( new UnitOfWorkScope() )
+            Rock.Model.Attribute attribute = null;
+
+            if ( _configuredType )
             {
-                Rock.Model.Attribute attribute = null;
+                attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute, 
+                    _entityTypeId, _entityQualifierColumn, _entityQualifierValue, CurrentPersonId );
+            }
+            else
+            {
+                attribute = Rock.Attribute.Helper.SaveAttributeEdits( edtAttribute,
+                    ddlAttrEntityType.SelectedValueAsInt(), tbAttrQualifierField.Text, tbAttrQualifierValue.Text, CurrentPersonId );
+            }
 
-                RockTransactionScope.WrapTransaction( () =>
-                {
-                    var attributeService = new AttributeService();
-
-                    // remove old qualifier values in case they changed
-                    if ( edtAttribute.AttributeId.HasValue )
-                    {
-                        AttributeQualifierService attributeQualifierService = new AttributeQualifierService();
-                        foreach ( var oldQualifier in attributeQualifierService.GetByAttributeId( edtAttribute.AttributeId.Value ).ToList() )
-                        {
-                            attributeQualifierService.Delete( oldQualifier, CurrentPersonId );
-                            attributeQualifierService.Save( oldQualifier, CurrentPersonId );
-                        }
-                        attribute = attributeService.Get( edtAttribute.AttributeId.Value );
-                    }
-
-                    if ( attribute == null )
-                    {
-                        attribute = new Rock.Model.Attribute();
-                        attributeService.Add( attribute, CurrentPersonId );
-                    }
-
-                    if ( _configuredType )
-                    {
-                        attribute.EntityTypeId = _entityTypeId;
-                        attribute.EntityTypeQualifierColumn = _entityQualifierColumn;
-                        attribute.EntityTypeQualifierValue = _entityQualifierValue;
-                    }
-                    else
-                    {
-                        attribute.EntityTypeId = ddlAttrEntityType.SelectedValueAsInt();
-                        attribute.EntityTypeQualifierColumn = tbAttrQualifierField.Text;
-                        attribute.EntityTypeQualifierValue = tbAttrQualifierValue.Text;
-                    }
-
-                    edtAttribute.GetAttributeProperties( attribute );
-
-                    // Controls will show warnings
-                    if ( !attribute.IsValid )
-                    {
-                        return;
-                    }
-
-                    attributeService.Save( attribute, CurrentPersonId );
-
-                } );
-
-                if ( attribute != null )
-                {
-                    Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
-                    if ( !_entityTypeId.HasValue && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && !_entityId.HasValue )
-                    {
-                        Rock.Web.Cache.GlobalAttributesCache.Flush();
-                    }
-                }
-
+            // Attribute will be null if it was not valid
+            if ( attribute == null )
+            {
+                return;
             }
 
             BindGrid();
@@ -512,7 +467,6 @@ namespace RockWeb.Blocks.Administration
                 }
 
                 hfIdValues.Value = string.Empty;
-
                 modalDetails.Hide();
             }
 
@@ -543,12 +497,16 @@ namespace RockWeb.Blocks.Administration
             cpCategoriesFilter.EntityTypeQualifierValue = entityTypeId.ToString();
 
             var selectedIDs = new List<int>();
-            foreach ( var idVal in rFilter.GetUserPreference( "Categories" ).SplitDelimitedValues() )
+
+            if ( (entityTypeId ?? 0).ToString() == rFilter.GetUserPreference( "Entity Type" ) )
             {
-                int id = int.MinValue;
-                if ( int.TryParse( idVal, out id ) )
+                foreach ( var idVal in rFilter.GetUserPreference( "Categories" ).SplitDelimitedValues() )
                 {
-                    selectedIDs.Add( id );
+                    int id = int.MinValue;
+                    if ( int.TryParse( idVal, out id ) )
+                    {
+                        selectedIDs.Add( id );
+                    }
                 }
             }
 
@@ -560,7 +518,7 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindGrid()
         {
-            IQueryable<Rock.Model.Attribute> query;
+            IQueryable<Rock.Model.Attribute> query = null;
 
             AttributeService attributeService = new AttributeService();
             if ( _configuredType )
@@ -569,10 +527,22 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                query = attributeService.GetByEntityTypeId( ddlEntityType.SelectedValueAsInt() );
+                int entityTypeId = int.MinValue; 
+                if (int.TryParse(rFilter.GetUserPreference("Entity Type"), out entityTypeId))
+                {
+                    if ( entityTypeId == 0 )
+                    {
+                        query = attributeService.GetByEntityTypeId( null );
+                    }
+                    else
+                    {
+                        query = attributeService.GetByEntityTypeId( entityTypeId );
+                    }
+                }
             }
 
-            List<int> selectedCategoryIds = cpCategoriesFilter.SelectedValuesAsInt().Where( v => v != 0).ToList();
+            var selectedCategoryIds = new List<int>();
+            rFilter.GetUserPreference( "Categories" ).SplitDelimitedValues().ToList().ForEach( s => selectedCategoryIds.Add( int.Parse( s ) ) );
             if ( selectedCategoryIds.Any() )
             {
                 query = query.
@@ -604,13 +574,12 @@ namespace RockWeb.Blocks.Administration
         {
             var attributeModel = new AttributeService().Get( attributeId );
 
-            edtAttribute.AttributeEntityTypeId = _entityTypeId;
-
             if ( attributeModel == null )
             {
                 lAttributeTitle.Text = ("Add Attribute").FormatAsHtmlTitle();
 
                 attributeModel = new Rock.Model.Attribute();
+                attributeModel.FieldTypeId = FieldTypeCache.Read( Rock.SystemGuid.FieldType.TEXT ).Id;
 
                 if ( !_configuredType )
                 {
@@ -650,8 +619,8 @@ namespace RockWeb.Blocks.Administration
                 ddlAttrEntityType.Visible = true;
                 tbAttrQualifierField.Visible = true;
                 tbAttrQualifierValue.Visible = true;
-
-                ddlAttrEntityType.SelectedValue = ( attributeModel.EntityTypeId ?? 0 ).ToString();
+                
+                ddlAttrEntityType.SetValue( attributeModel.EntityTypeId.HasValue ? attributeModel.EntityTypeId.Value.ToString() : "0" );
                 tbAttrQualifierField.Text = attributeModel.EntityTypeQualifierColumn;
                 tbAttrQualifierValue.Text = attributeModel.EntityTypeQualifierValue;
             }
@@ -673,10 +642,11 @@ namespace RockWeb.Blocks.Administration
 
                 var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
                 var attributeValue = new AttributeValueService().GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
-                attribute.AddControl( fsEditControl.Controls, attributeValue != null ? attributeValue.Value : null, setValues, true );
+                attribute.AddControl( fsEditControl.Controls, attributeValue != null ? attributeValue.Value : null, string.Empty, setValues, true );
+
+                SetValidationGroup( fsEditControl.Controls, modalDetails.ValidationGroup );
 
                 hfIdValues.Value = attribute.Id.ToString();
-
                 modalDetails.Show();
             }
         }

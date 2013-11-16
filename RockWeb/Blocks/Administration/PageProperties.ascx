@@ -22,8 +22,8 @@
 
         <div class="tabContent" >
 
-            <asp:ValidationSummary ID="valSummaryTop" runat="server"  
-                HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server"  HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
+
             <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert alert-danger block-message error"/>
             
             <asp:Panel ID="pnlBasicProperty" runat="server" Visible="true" >
@@ -105,8 +105,8 @@
                     <div class="col-md-6">
                         <fieldset>
                             <legend>Import Pages</legend>
-                            <asp:Panel runat="server" ID="pnlImportSuccess" CssClass="row-fluid" Visible="False">
-                                <div class="span12 alert alert-success">
+                            <asp:Panel runat="server" ID="pnlImportSuccess" CssClass="row" Visible="False">
+                                <div class="col-md-12 alert alert-success">
                                     <p><i class="icon-bolt"></i> <strong>Sweet!</strong> Your package was imported successfully.</p>
                                     <asp:Repeater ID="rptImportWarnings" runat="server" Visible="False">
                                         <HeaderTemplate>
@@ -124,8 +124,8 @@
                             </asp:Panel>
                             <asp:Repeater runat="server" ID="rptImportErrors" Visible="False">
                                 <HeaderTemplate>
-                                    <div class="row-fluid">
-                                        <div class="span12 alert alert-danger">
+                                    <div class="row">
+                                        <div class="col-md-12 alert alert-danger">
                                             <p><strong>Uh oh!</strong> Looks like we ran into some trouble importing the package.</p>
                                             <ul>
                                 </HeaderTemplate>

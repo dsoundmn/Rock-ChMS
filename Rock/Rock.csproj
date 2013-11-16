@@ -52,6 +52,9 @@
     <Reference Include="CKEditor.NET">
       <HintPath>..\packages\CKEditor.3.6.4\CKEditor.NET.dll</HintPath>
     </Reference>
+    <Reference Include="CronExpressionDescriptor">
+      <HintPath>..\packages\CronExpressionDescriptor.1.7.1\lib\net35\CronExpressionDescriptor.dll</HintPath>
+    </Reference>
     <Reference Include="DDay.iCal">
       <HintPath>..\packages\DDay.iCal.1.0.2.575\lib\DDay.iCal.dll</HintPath>
     </Reference>
@@ -95,6 +98,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NuGet.Core.2.2.0\lib\net40-Client\NuGet.Core.dll</HintPath>
     </Reference>
+    <Reference Include="RestSharp">
+      <HintPath>..\packages\RestSharp.104.3.3\lib\net4\RestSharp.dll</HintPath>
+    </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System" />
@@ -131,6 +137,9 @@
     </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="Twilio.Api">
+      <HintPath>..\packages\Twilio.3.6.5\lib\3.5\Twilio.Api.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Address\GeocodeContainer.cs">
@@ -144,6 +153,9 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\DefinedTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\GroupLocationTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\InheritedAttribute.cs" />
     <Compile Include="Attribute\TimeFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerRangeFieldAttribute.cs" />
     <Compile Include="Attribute\DateRangeFieldAttribute.cs" />
@@ -170,6 +182,8 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Communication\Transport\Twilio.cs" />
+    <Compile Include="Field\Types\GroupLocationTypeFieldType.cs" />
     <Compile Include="Field\Types\TimeFieldType.cs" />
     <Compile Include="Field\Types\IntegerRangeFieldType.cs" />
     <Compile Include="Field\Types\DateRangeFieldType.cs" />
@@ -181,6 +195,7 @@
     <Compile Include="Financial\Payment.cs" />
     <Compile Include="Financial\GatewayComponent.cs" />
     <Compile Include="Financial\GatewayContainer.cs" />
+    <Compile Include="Jobs\RunSQL.cs" />
     <Compile Include="Migrations\201308232058045_CreateDatabase.cs" />
     <Compile Include="Migrations\201308232058045_CreateDatabase.Designer.cs">
       <DependentUpon>201308232058045_CreateDatabase.cs</DependentUpon>
@@ -273,6 +288,46 @@
     <Compile Include="Migrations\201310112336543_GivingGroup.Designer.cs">
       <DependentUpon>201310112336543_GivingGroup.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201310230524455_ContributionStatements.cs" />
+    <Compile Include="Migrations\201310230524455_ContributionStatements.Designer.cs">
+      <DependentUpon>201310230524455_ContributionStatements.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310231253281_GroupTypeRole.cs" />
+    <Compile Include="Migrations\201310231253281_GroupTypeRole.Designer.cs">
+      <DependentUpon>201310231253281_GroupTypeRole.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310231644243_GroupTypeRefactor.cs" />
+    <Compile Include="Migrations\201310231644243_GroupTypeRefactor.Designer.cs">
+      <DependentUpon>201310231644243_GroupTypeRefactor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310241348152_GroupTerms.cs" />
+    <Compile Include="Migrations\201310241348152_GroupTerms.Designer.cs">
+      <DependentUpon>201310241348152_GroupTerms.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310281702071_SMSFromValue.cs" />
+    <Compile Include="Migrations\201310281702071_SMSFromValue.Designer.cs">
+      <DependentUpon>201310281702071_SMSFromValue.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310291850368_StatementGenGroupTypeRoleFix.cs" />
+    <Compile Include="Migrations\201310291850368_StatementGenGroupTypeRoleFix.Designer.cs">
+      <DependentUpon>201310291850368_StatementGenGroupTypeRoleFix.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201311042002460_RenameLocationFields.cs" />
+    <Compile Include="Migrations\201311042002460_RenameLocationFields.Designer.cs">
+      <DependentUpon>201311042002460_RenameLocationFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201311081500222_RequireCategoryName.cs" />
+    <Compile Include="Migrations\201311081500222_RequireCategoryName.Designer.cs">
+      <DependentUpon>201311081500222_RequireCategoryName.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201311141450379_RenameSavedAccountReferenceTransactionId.cs" />
+    <Compile Include="Migrations\201311141450379_RenameSavedAccountReferenceTransactionId.Designer.cs">
+      <DependentUpon>201311141450379_RenameSavedAccountReferenceTransactionId.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201311151429480_TransactionReferenceNumber.cs" />
+    <Compile Include="Migrations\201311151429480_TransactionReferenceNumber.Designer.cs">
+      <DependentUpon>201311151429480_TransactionReferenceNumber.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -286,6 +341,14 @@
     <Compile Include="PersonProfile\Badge\NextSteps.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Reporting\DataSelectComponent.cs" />
+    <Compile Include="Reporting\DataFilter\Person\GivingAmountFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\DistanceFromFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\InGroupGroupTypeFilter.cs" />
+    <Compile Include="Reporting\DataFilter\Person\InGroupFilter.cs" />
+    <Compile Include="Reporting\DataSelect\Person\LastContributionSelect.cs" />
+    <Compile Include="Reporting\DataSelectContainer.cs" />
+    <Compile Include="Reporting\FilterExpressionExtractor.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
@@ -526,6 +589,11 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\Grid\LinkButtonField.cs" />
+    <Compile Include="Web\UI\Controls\IHasValidationGroup.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\EntityTypePicker.cs" />
+    <Compile Include="Web\UI\Controls\PanelWidget.cs" />
+    <Compile Include="Web\UI\Controls\RockControlWrapper.cs" />
     <Compile Include="Web\UI\Controls\HighlightLabel.cs" />
     <Compile Include="Web\UI\Controls\Pickers\BirthdayPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LocationItemPicker.cs" />
@@ -592,7 +660,7 @@
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActionTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActivityTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Grid\BadgeField.cs" />
-    <Compile Include="Web\UI\Controls\Grid\INotRowSelectedField.cs" />
+    <Compile Include="Web\UI\Controls\Grid\ISupressRowSelected.cs" />
     <Compile Include="Web\UI\Controls\Toggle.cs" />
     <Compile Include="Web\UI\Controls\HelpBlock.cs" />
     <Compile Include="Reporting\DataFilterComponent.cs" />
@@ -605,8 +673,11 @@
     <Compile Include="Web\UI\Controls\Grid\AttributeField.cs" />
     <Compile Include="Web\UI\Controls\IRockControl.cs" />
     <Compile Include="Web\UI\BreadCrumb.cs" />
+    <Compile Include="Web\UI\RockMasterPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Web\UI\IDetailBlock.cs" />
-    <Compile Include="Web\UI\IDimmableBlock.cs" />
+    <Compile Include="Web\UI\ISecondaryBlock.cs" />
     <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
@@ -756,13 +827,12 @@
     <Compile Include="Model\FinancialTransactionDetail.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\TransactionSearchValue.cs" />
     <Compile Include="Model\Group.cs" />
-    <Compile Include="Model\CodeGenerated\GroupRoleService.cs" />
+    <Compile Include="Model\CodeGenerated\GroupTypeRoleService.cs" />
     <Compile Include="Model\CodeGenerated\GroupService.cs" />
     <Compile Include="Model\GroupService.Partial.cs" />
-    <Compile Include="Model\GroupRole.cs" />
-    <Compile Include="Model\GroupRoleService.Partial.cs" />
+    <Compile Include="Model\GroupTypeRole.cs" />
+    <Compile Include="Model\GroupTypeRoleService.Partial.cs" />
     <Compile Include="Model\GroupType.cs" />
     <Compile Include="Model\CodeGenerated\GroupTypeService.cs" />
     <Compile Include="Model\GroupTypeService.Partial.cs" />
@@ -831,7 +901,6 @@
     <Compile Include="Model\WorkflowType.cs" />
     <Compile Include="Model\ServiceJob.cs" />
     <Compile Include="Model\ServiceJobService.Partial.cs" />
-    <Compile Include="Version.cs" />
     <Compile Include="Web\Cache\AttributeCache.cs" />
     <Compile Include="Web\Cache\BlockTypeCache.cs" />
     <Compile Include="Web\Cache\BlockCache.cs" />
@@ -1152,6 +1221,36 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201310112336543_GivingGroup.resx">
       <DependentUpon>201310112336543_GivingGroup.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310230524455_ContributionStatements.resx">
+      <DependentUpon>201310230524455_ContributionStatements.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310231253281_GroupTypeRole.resx">
+      <DependentUpon>201310231253281_GroupTypeRole.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310231644243_GroupTypeRefactor.resx">
+      <DependentUpon>201310231644243_GroupTypeRefactor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310241348152_GroupTerms.resx">
+      <DependentUpon>201310241348152_GroupTerms.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310281702071_SMSFromValue.resx">
+      <DependentUpon>201310281702071_SMSFromValue.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310291850368_StatementGenGroupTypeRoleFix.resx">
+      <DependentUpon>201310291850368_StatementGenGroupTypeRoleFix.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311042002460_RenameLocationFields.resx">
+      <DependentUpon>201311042002460_RenameLocationFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311081500222_RequireCategoryName.resx">
+      <DependentUpon>201311081500222_RequireCategoryName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311141450379_RenameSavedAccountReferenceTransactionId.resx">
+      <DependentUpon>201311141450379_RenameSavedAccountReferenceTransactionId.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311151429480_TransactionReferenceNumber.resx">
+      <DependentUpon>201311151429480_TransactionReferenceNumber.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
