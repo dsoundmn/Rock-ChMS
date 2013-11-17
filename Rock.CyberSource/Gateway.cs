@@ -284,35 +284,31 @@ namespace Rock.CyberSource
         /// <param name="transaction">The transaction.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public override int GetReferenceId( FinancialTransaction transaction, out string errorMessage )
+        public override string GetReferenceId( FinancialTransaction transaction, out string errorMessage )
         {
             errorMessage = string.Empty;
             RequestMessage request = GetMerchantInfo();
             request.paySubscriptionCreateService = new PaySubscriptionCreateService();
             request.paySubscriptionCreateService.run = "true";
             request.paySubscriptionCreateService.paymentRequestID = transaction.TransactionCode;
-            
+
             request.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
-            //request.recurringSubscriptionInfo.subscriptionID = transaction.TransactionCode;
             request.recurringSubscriptionInfo.frequency = "ON-DEMAND";
             request.recurringSubscriptionInfo.amount = "0";
-            //request.subscription = new Subscription();
-            //request.subscription.title = DateTime.Now + ": Code " + transaction.TransactionCode + " for " + transaction.Amount.ToString();
-            //request.subscription.paymentMethod = transaction.CurrencyTypeValue.Name.Equals( "Check" ) ? "check" : "creditcard";
             ReplyMessage reply = SubmitTransaction( request );
-
             if ( reply.reasonCode == "100" )
-            {
-                return Int32.Parse( reply.paySubscriptionCreateReply.subscriptionID );
+            {   
+                var orderCode = transaction.TransactionCode;
+                var profileCode = reply.paySubscriptionCreateReply.subscriptionID;
+                transaction.TransactionCode = string.Format( "{0};{1}", orderCode, profileCode );
+                return transaction.TransactionCode;
             }
             else
             {
                 errorMessage = ProcessError( reply );
-
             }
-
             
-            return 0;
+            return string.Empty;
         }
 
         #endregion
