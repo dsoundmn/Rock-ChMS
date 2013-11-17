@@ -193,7 +193,8 @@ namespace Rock.CyberSource
             else if ( paymentInfo is ReferencePaymentInfo )
             {
                 var reference = paymentInfo as ReferencePaymentInfo;
-                request.paySubscriptionCreateService.paymentRequestID = reference.ReferenceNumber;                
+                request.paySubscriptionCreateService.paymentRequestID = reference.ReferenceNumber;
+                // charge the reference number
             }
 
             ReplyMessage reply = SubmitTransaction( request );
@@ -284,7 +285,7 @@ namespace Rock.CyberSource
         /// <param name="transaction">The transaction.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public override string GetReferenceId( FinancialTransaction transaction, out string errorMessage )
+        public override string GetReferenceNumber( FinancialTransaction transaction, out string errorMessage )
         {
             errorMessage = string.Empty;
             RequestMessage request = GetMerchantInfo();
@@ -297,11 +298,8 @@ namespace Rock.CyberSource
             request.recurringSubscriptionInfo.amount = "0";
             ReplyMessage reply = SubmitTransaction( request );
             if ( reply.reasonCode == "100" )
-            {   
-                var orderCode = transaction.TransactionCode;
-                var profileCode = reply.paySubscriptionCreateReply.subscriptionID;
-                transaction.TransactionCode = string.Format( "{0};{1}", orderCode, profileCode );
-                return transaction.TransactionCode;
+            {
+                return reply.paySubscriptionCreateReply.subscriptionID;
             }
             else
             {
