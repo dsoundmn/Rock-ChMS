@@ -76,53 +76,67 @@ namespace Rock.CyberSource
         public override FinancialTransaction Charge( PaymentInfo paymentInfo, out string errorMessage )
         {
             errorMessage = string.Empty;
-
             RequestMessage request = GetMerchantInfo();
             request.billTo = GetBillTo( paymentInfo );            
             request.item = GetItems( paymentInfo );            
             request.purchaseTotals = GetTotals( paymentInfo );
-            
-            if ( paymentInfo is CreditCardPaymentInfo )
+
+            if ( paymentInfo is ReferencePaymentInfo )
             {
+                var reference = paymentInfo as ReferencePaymentInfo;
+                var verifyReply = VerifyReference( reference );                
+                
+                if ( verifyReply.reasonCode == "100" )
+                {
+                    if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
+                    {
+                        request.card = GetCard( verifyReply.paySubscriptionRetrieveReply );
+                    }
+                    else
+                    {
+                        request.check = GetCheck( verifyReply.paySubscriptionRetrieveReply );
+                    }
+                }
+                else
+                {
+                    errorMessage = ProcessError( verifyReply );
+                    return null;
+                }
+            }
+            else if ( paymentInfo is CreditCardPaymentInfo )
+            {   
                 var cc = paymentInfo as CreditCardPaymentInfo;
                 request.card = GetCard( cc );
-
+           
+            }            
+            else if ( paymentInfo is ACHPaymentInfo )
+            {   
+                var ach = paymentInfo as ACHPaymentInfo;
+                request.check = GetCheck( ach );
+            }
+            else 
+            {
+                errorMessage = "Payment type not implemented.";
+                return null;
+            }
+            
+            // Request appropriate services
+            if ( paymentInfo.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
+            {
                 request.ccAuthService = new CCAuthService();
                 request.ccAuthService.run = "true";
                 request.ccAuthService.commerceIndicator = "internet";
-                
                 request.ccCaptureService = new CCCaptureService();
-                request.ccCaptureService.run = "true";                         
-            }            
-            else if ( paymentInfo is ACHPaymentInfo )
+                request.ccCaptureService.run = "true";
+            }
+            else
             {
-                var ach = paymentInfo as ACHPaymentInfo;
-                request.check = GetCheck( ach );
-
                 request.ecAuthenticateService = new ECAuthenticateService();
                 request.ecAuthenticateService.run = "true";
-                
                 request.ecDebitService = new ECDebitService();
                 request.ecDebitService.run = "true";
                 request.ecDebitService.commerceIndicator = "internet";
-            }            
-            else if ( paymentInfo is ReferencePaymentInfo )
-            {
-                ReferencePaymentInfo reference = paymentInfo as ReferencePaymentInfo;                
-                request.paySubscriptionRetrieveService = new PaySubscriptionRetrieveService();
-                request.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
-                request.recurringSubscriptionInfo.subscriptionID = reference.ReferenceNumber;
-                ReplyMessage verificationReply = SubmitTransaction( request );
-                
-                // where is the authorize service?
-
-                
             }
-            else if ( paymentInfo is SwipePaymentInfo )
-            {
-                errorMessage = "Point of Sale transactions not implemented.";
-                return null;
-            }           
 
             ReplyMessage reply = SubmitTransaction( request );
             if ( reply != null )
@@ -280,7 +294,7 @@ namespace Rock.CyberSource
         }
 
         /// <summary>
-        /// Gets the reference identifier for a saved transaction.
+        /// Gets the reference number from the gateway for converting a transaction to a profile.
         /// </summary>
         /// <param name="transaction">The transaction.</param>
         /// <param name="errorMessage">The error message.</param>
@@ -292,7 +306,6 @@ namespace Rock.CyberSource
             request.paySubscriptionCreateService = new PaySubscriptionCreateService();
             request.paySubscriptionCreateService.run = "true";
             request.paySubscriptionCreateService.paymentRequestID = transaction.TransactionCode;
-
             request.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
             request.recurringSubscriptionInfo.frequency = "ON-DEMAND";
             request.recurringSubscriptionInfo.amount = "0";
@@ -343,7 +356,7 @@ namespace Rock.CyberSource
        
             try            
             {                
-                ReplyMessage reply = proxy.runTransaction( request );
+                var reply = proxy.runTransaction( request );
                 return reply;
             }
             catch ( TimeoutException e )
@@ -453,6 +466,22 @@ namespace Rock.CyberSource
                     var asdf = reply;
                     return "\nYour payment was not processed.  Please double check your payment details.";
             }
+        }
+
+        /// <summary>
+        /// Verifies the reference.
+        /// </summary>
+        /// <param name="reference">The reference.</param>
+        /// <returns></returns>
+        private ReplyMessage VerifyReference( ReferencePaymentInfo reference )
+        {
+            RequestMessage verifyRequest = GetMerchantInfo();
+            verifyRequest.paySubscriptionRetrieveService = new PaySubscriptionRetrieveService();
+            verifyRequest.paySubscriptionRetrieveService.run = "true";
+            verifyRequest.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
+            verifyRequest.recurringSubscriptionInfo.subscriptionID = reference.ReferenceNumber;
+            ReplyMessage verifyReply = SubmitTransaction( verifyRequest );
+            return verifyReply;            
         }
 
         #endregion  
@@ -573,14 +602,14 @@ namespace Rock.CyberSource
         /// <returns></returns>
         private Card GetCard( CreditCardPaymentInfo cc )
         {
-            var card = new Card();            
+            var card = new Card();
             card.accountNumber = cc.Number.AsNumeric();
-            card.expirationMonth = cc.ExpirationDate.Month.ToString("D2");
-            card.expirationYear = cc.ExpirationDate.Year.ToString("D4");
+            card.expirationMonth = cc.ExpirationDate.Month.ToString( "D2" );
+            card.expirationYear = cc.ExpirationDate.Year.ToString( "D4" );
             card.cvNumber = cc.Code.AsNumeric();
             card.cvIndicator = "1";
 
-            switch(cc.CreditCardTypeValue.Name)
+            switch ( cc.CreditCardTypeValue.Name )
             {
                 case "Visa":
                     card.cardType = "001";
@@ -607,7 +636,22 @@ namespace Rock.CyberSource
                     card.cardType = string.Empty;
                     break;
             }
+            
+            return card;
+        }
 
+        /// <summary>
+        /// Gets the card from a previously saved profile.
+        /// </summary>
+        /// <param name="reply">The reply.</param>
+        /// <returns></returns>
+        private Card GetCard( PaySubscriptionRetrieveReply reply )
+        {
+            var card = new Card();
+            card.accountNumber = reply.cardAccountNumber;
+            card.expirationMonth = reply.cardExpirationMonth;
+            card.expirationYear = reply.cardExpirationYear;
+            card.cardType = reply.cardType;
             return card;
         }
 
@@ -628,7 +672,25 @@ namespace Rock.CyberSource
         }
 
         /// <summary>
-        /// Gets the recurring.
+        /// Gets the check from a previously saved profile.
+        /// </summary>
+        /// <param name="reply">The reply.</param>
+        /// <returns></returns>
+        private Check GetCheck( PaySubscriptionRetrieveReply reply )
+        {
+            var check = new Check();
+            if ( reply != null )
+            {
+                check.accountNumber = reply.checkAccountNumber;
+                check.accountType = reply.checkAccountType;
+                check.bankTransitNumber = reply.checkBankTransitNumber;
+                check.secCode = reply.checkSecCode;
+            }
+            return check;
+        }
+
+        /// <summary>
+        /// Gets the recurring subscription info.
         /// </summary>
         /// <param name="schedule">The schedule.</param>
         /// <returns></returns>
@@ -645,7 +707,7 @@ namespace Rock.CyberSource
         }
 
         /// <summary>
-        /// Gets the recurring.
+        /// Gets the recurring subscription info.
         /// </summary>
         /// <param name="schedule">The schedule.</param>
         /// <returns></returns>
