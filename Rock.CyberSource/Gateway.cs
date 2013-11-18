@@ -115,8 +115,6 @@ namespace Rock.CyberSource
             }
             else
             {
-                request.ecAuthenticateService = new ECAuthenticateService();
-                request.ecAuthenticateService.run = "true";
                 request.ecDebitService = new ECDebitService();
                 request.ecDebitService.run = "true";
                 request.ecDebitService.commerceIndicator = "internet";
