@@ -84,24 +84,8 @@ namespace Rock.CyberSource
             if ( paymentInfo is ReferencePaymentInfo )
             {
                 var reference = paymentInfo as ReferencePaymentInfo;
-                var verifyReply = VerifyReference( reference );                
-                
-                if ( verifyReply.reasonCode == "100" )
-                {
-                    if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
-                    {
-                        request.card = GetCard( verifyReply.paySubscriptionRetrieveReply );
-                    }
-                    else
-                    {
-                        request.check = GetCheck( verifyReply.paySubscriptionRetrieveReply );
-                    }
-                }
-                else
-                {
-                    errorMessage = ProcessError( verifyReply );
-                    return null;
-                }
+                request.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
+                request.recurringSubscriptionInfo.subscriptionID = reference.ReferenceNumber;
             }
             else if ( paymentInfo is CreditCardPaymentInfo )
             {   
@@ -276,6 +260,32 @@ namespace Rock.CyberSource
         /// <returns></returns>
         public override bool GetScheduledPaymentStatus( FinancialScheduledTransaction transaction, out string errorMessage )
         {
+            
+            //RequestMessage verifyRequest = GetMerchantInfo();
+            //verifyRequest.paySubscriptionRetrieveService = new PaySubscriptionRetrieveService();
+            //verifyRequest.paySubscriptionRetrieveService.run = "true";
+            //verifyRequest.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
+            //verifyRequest.recurringSubscriptionInfo.subscriptionID = reference.ReferenceNumber;
+            //ReplyMessage verifyReply = SubmitTransaction( verifyRequest );
+            
+
+            //if ( verifyReply.reasonCode == "100" )
+            //{
+            //    if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
+            //    {
+            //        request.card = GetCard( verifyReply.paySubscriptionRetrieveReply );
+            //    }
+            //    else
+            //    {
+            //        request.check = GetCheck( verifyReply.paySubscriptionRetrieveReply );
+            //    }
+            //}
+            //else
+            //{
+            //    errorMessage = ProcessError( verifyReply );
+            //    return null;
+            //}
+
             errorMessage = string.Empty;
             return false;
         }
@@ -467,23 +477,7 @@ namespace Rock.CyberSource
                     return "\nYour payment was not processed.  Please double check your payment details.";
             }
         }
-
-        /// <summary>
-        /// Verifies the reference.
-        /// </summary>
-        /// <param name="reference">The reference.</param>
-        /// <returns></returns>
-        private ReplyMessage VerifyReference( ReferencePaymentInfo reference )
-        {
-            RequestMessage verifyRequest = GetMerchantInfo();
-            verifyRequest.paySubscriptionRetrieveService = new PaySubscriptionRetrieveService();
-            verifyRequest.paySubscriptionRetrieveService.run = "true";
-            verifyRequest.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
-            verifyRequest.recurringSubscriptionInfo.subscriptionID = reference.ReferenceNumber;
-            ReplyMessage verifyReply = SubmitTransaction( verifyRequest );
-            return verifyReply;            
-        }
-
+               
         #endregion  
 
         #region Helper Methods
@@ -645,15 +639,15 @@ namespace Rock.CyberSource
         /// </summary>
         /// <param name="reply">The reply.</param>
         /// <returns></returns>
-        private Card GetCard( PaySubscriptionRetrieveReply reply )
-        {
-            var card = new Card();
-            card.accountNumber = reply.cardAccountNumber;
-            card.expirationMonth = reply.cardExpirationMonth;
-            card.expirationYear = reply.cardExpirationYear;
-            card.cardType = reply.cardType;
-            return card;
-        }
+        //private Card GetCard( PaySubscriptionRetrieveReply reply )
+        //{
+        //    var card = new Card();
+        //    card.accountNumber = reply.cardAccountNumber;
+        //    card.expirationMonth = reply.cardExpirationMonth;
+        //    card.expirationYear = reply.cardExpirationYear;
+        //    card.cardType = reply.cardType;
+        //    return card;
+        //}
 
         /// <summary>
         /// Gets the check information.
@@ -676,18 +670,18 @@ namespace Rock.CyberSource
         /// </summary>
         /// <param name="reply">The reply.</param>
         /// <returns></returns>
-        private Check GetCheck( PaySubscriptionRetrieveReply reply )
-        {
-            var check = new Check();
-            if ( reply != null )
-            {
-                check.accountNumber = reply.checkAccountNumber;
-                check.accountType = reply.checkAccountType;
-                check.bankTransitNumber = reply.checkBankTransitNumber;
-                check.secCode = reply.checkSecCode;
-            }
-            return check;
-        }
+        //private Check GetCheck( PaySubscriptionRetrieveReply reply )
+        //{
+        //    var check = new Check();
+        //    if ( reply != null )
+        //    {
+        //        check.accountNumber = reply.checkAccountNumber;
+        //        check.accountType = reply.checkAccountType;
+        //        check.bankTransitNumber = reply.checkBankTransitNumber;
+        //        check.secCode = reply.checkSecCode;
+        //    }
+        //    return check;
+        //}
 
         /// <summary>
         /// Gets the recurring subscription info.
