@@ -10,12 +10,11 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
-using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
 {
@@ -27,7 +26,7 @@ namespace RockWeb.Blocks.Cms
     [TextField( "Context Name", "Name to use to further 'personalize' content.  Blocks with the same name, and referenced with the same context parameter will share html values.", false )]
     [BooleanField( "Require Approval", "Require that content be approved?", false )]
     [BooleanField( "Support Versions", "Support content versioning?", false )]
-    public partial class HtmlContent : Rock.Web.UI.RockBlock
+    public partial class HtmlContent : RockBlock
     {
         #region Events
 
@@ -40,193 +39,6 @@ namespace RockWeb.Blocks.Cms
             base.OnInit( e );
 
             ShowView();
-        }
-
-<<<<<<< HEAD
-        /// <summary>
-        /// Sets the current panel.
-        /// </summary>
-        /// <param name="pnl">The PNL.</param>
-        private void SetCurrentPanel( Panel pnl )
-        {
-            pnlView.Visible = pnl == pnlView;
-            pnlEdit.Visible = pnl == pnlEdit;
-            pnlPreview.Visible = pnl == pnlPreview;
-            pnlVersionHistory.Visible = pnl == pnlVersionHistory;
-=======
-        protected override void OnLoad( EventArgs e )
-        {
-            base.OnLoad( e );
-            hfAction.Value = string.Empty;
-        }
-
-        protected void lbEdit_Click( object sender, EventArgs e )
-        {
-            HtmlContentService service = new HtmlContentService();
-            Rock.Model.HtmlContent content = service.GetActiveContent( CurrentBlock.Id, EntityValue() );
-            if ( content == null )
-                content = new Rock.Model.HtmlContent();
-
-            if ( _supportVersioning )
-            {
-                phCurrentVersion.Visible = true;
-                pnlVersioningHeader.Visible = true;
-                cbOverwriteVersion.Visible = true;
-
-                hfVersion.Value = content.Version.ToString();
-                lVersion.Text = content.Version.ToString();
-                tbStartDate.Text = content.StartDateTime.HasValue ? content.StartDateTime.Value.ToShortDateString() : string.Empty;
-                tbExpireDate.Text = content.ExpireDateTime.HasValue ? content.ExpireDateTime.Value.ToShortDateString() : string.Empty;
-
-                if ( _requireApproval )
-                {
-                    cbApprove.Checked = content.IsApproved;
-                    cbApprove.Enabled = IsUserAuthorized( "Approve" );
-                    cbApprove.Visible = true;
-                }
-                else
-                    cbApprove.Visible = false;
-            }
-            else
-            {
-                phCurrentVersion.Visible = false;
-                pnlVersioningHeader.Visible = false;
-                cbOverwriteVersion.Visible = false;
-            }
-
-            htmlContent.Toolbar = "RockCustomConfigFull";
-            htmlContent.Text = content.Content;
-            htmlContent.MergeFields.Clear();
-            htmlContent.MergeFields.Add( "GlobalAttribute" );
-            mpeContent.Show();
-            htmlContent.Visible = true;
-            HtmlContentModified = false;
-            htmlContent.TextChanged += htmlContent_TextChanged;
-
-            BindGrid();
-
-            hfAction.Value = "Edit";
-        }
-
-        /// <summary>
-        /// Handles the TextChanged event of the htmlContent control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        void htmlContent_TextChanged( object sender, EventArgs e )
-        {
-            HtmlContentModified = true;
-        }
-
-        protected override void OnPreRender( EventArgs e )
-        {
-            aClose.Attributes["onclick"] = string.Format(
-                "$find('{0}').hide();return false;", mpeContent.BehaviorID );
-
-            base.OnPreRender( e );
-        }
-
-        void HtmlContent_AttributesUpdated( object sender, EventArgs e )
-        {
-            lPreText.Text = GetAttributeValue( "PreText" );
-            lPostText.Text = GetAttributeValue( "PostText" );
-        }
-
-        protected void btnSave_Click( object sender, EventArgs e )
-        {
-            if ( IsUserAuthorized( "Edit" ) || IsUserAuthorized( "Administrate" ) )
-            {
-                Rock.Model.HtmlContent content = null;
-                HtmlContentService service = new HtmlContentService();
-
-                // get settings
-                string entityValue = EntityValue();
-
-                // get current  content
-                int version = 0;
-                if ( !Int32.TryParse( hfVersion.Value, out version ) )
-                    version = 0;
-                content = service.GetByBlockIdAndEntityValueAndVersion( CurrentBlock.Id, entityValue, version );
-
-                // if the existing content changed, and the overwrite option was not checked, create a new version
-                if ( content != null &&
-                    _supportVersioning &&
-                    content.Content != htmlContent.Text &&
-                    !cbOverwriteVersion.Checked )
-                    content = null;
-
-                // if a record doesn't exist then  create one
-                if ( content == null )
-                {
-                    content = new Rock.Model.HtmlContent();
-                    content.BlockId = CurrentBlock.Id;
-                    content.EntityValue = entityValue;
-
-                    if ( _supportVersioning )
-                    {
-                        int? maxVersion = service.Queryable().
-                            Where( c => c.BlockId == CurrentBlock.Id &&
-                                c.EntityValue == entityValue ).
-                            Select( c => (int?)c.Version ).Max();
-
-                        content.Version = maxVersion.HasValue ? maxVersion.Value + 1 : 1;
-                    }
-                    else
-                        content.Version = 0;
-
-                    service.Add( content, CurrentPersonId );
-                }
-
-                if ( _supportVersioning )
-                {
-                    DateTime startDate;
-                    if ( DateTime.TryParse( tbStartDate.Text, out startDate ) )
-                        content.StartDateTime = startDate;
-                    else
-                        content.StartDateTime = null;
-
-                    DateTime expireDate;
-                    if ( DateTime.TryParse( tbExpireDate.Text, out expireDate ) )
-                        content.ExpireDateTime = expireDate;
-                    else
-                        content.ExpireDateTime = null;
-                }
-                else
-                {
-                    content.StartDateTime = null;
-                    content.ExpireDateTime = null;
-                }
-
-                if ( !_requireApproval || IsUserAuthorized( "Approve" ) )
-                {
-                    content.IsApproved = !_requireApproval || cbApprove.Checked;
-                    if ( content.IsApproved )
-                    {
-                        content.ApprovedByPersonId = CurrentPersonId;
-                        content.ApprovedDateTime = DateTime.Now;
-                    }
-                }
-
-                content.Content = htmlContent.Text;
-
-                if ( service.Save( content, CurrentPersonId ) )
-                {
-                    // flush cache content 
-                    this.FlushCacheItem( entityValue );
-                    ShowView();
-                }
-                else
-                {
-                    // TODO: service.ErrorMessages;
-                }
-
-            }
-
-            else
-            {
-                ShowView();
-            }
->>>>>>> refs/heads/develop
         }
 
         #endregion
@@ -268,12 +80,14 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnEdit_Click( object sender, EventArgs e )
         {
-            SetCurrentPanel( pnlEdit );
+            pnlEdit.Visible = true;
             mdEdit.Show();
-            
+
             string entityValue = EntityValue();
             Rock.Model.HtmlContent content = new HtmlContentService().GetActiveContent( CurrentBlock.Id, entityValue );
             edtHtml.Text = content != null ? content.Content : string.Empty;
+
+            LoadDropDowns();
         }
 
         #endregion
@@ -285,8 +99,7 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         protected void ShowView()
         {
-            SetCurrentPanel( pnlView );
-
+            pnlEdit.Visible = false;
             string entityValue = EntityValue();
             string html = string.Empty;
 
@@ -298,13 +111,9 @@ namespace RockWeb.Blocks.Cms
                 Rock.Model.HtmlContent content = new HtmlContentService().GetActiveContent( CurrentBlock.Id, entityValue );
 
                 if ( content != null )
-<<<<<<< HEAD
                 {
                     html = content.Content;
                 }
-=======
-                    html = content.Content.ResolveMergeFields( GetGlobalMergeFields() );
->>>>>>> refs/heads/develop
                 else
                 {
                     html = string.Empty;
@@ -335,7 +144,7 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Binds the grid.
         /// </summary>
-        private void BindGrid()
+        private void LoadDropDowns()
         {
             var HtmlService = new HtmlContentService();
             var content = HtmlService.GetContent( CurrentBlock.Id, EntityValue() );
@@ -378,8 +187,12 @@ namespace RockWeb.Blocks.Cms
                     v.ExpireDateTime
                 } ).ToList();
 
-            //rGrid.DataSource = versions;
-            //rGrid.DataBind();
+            ddlVersions.Items.Clear();
+            ddlVersions.Items.Add( new ListItem( "Latest", "0" ) );
+            foreach (var version in versions)
+            {
+                ddlVersions.Items.Add( new ListItem( string.Format( "Version {0} - {1} ", version.Version, version.ModifiedDateTime ), version.Id.ToString() ) );
+            }
         }
 
         /// <summary>
@@ -403,26 +216,6 @@ namespace RockWeb.Blocks.Cms
             }
 
             return entityValue;
-        }
-
-        public Dictionary<string, object> GetGlobalMergeFields()
-        {
-            var configValues = new Dictionary<string, object>();
-
-            var globalAttributeValues = new Dictionary<string, object>();
-            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
-            foreach ( var attribute in globalAttributes.AttributeKeys.OrderBy( a => a.Value ) )
-            {
-                var attributeCache = AttributeCache.Read( attribute.Key );
-                if ( attributeCache.IsAuthorized( "View", null ) )
-                {
-                    globalAttributeValues.Add( attributeCache.Key, globalAttributes.AttributeValues[attributeCache.Key].Value );
-                }
-            }
-
-            configValues.Add( "GlobalAttribute", globalAttributeValues );
-
-            return configValues;
         }
 
         #endregion
@@ -451,27 +244,10 @@ namespace RockWeb.Blocks.Cms
 
         #endregion
 
-        #region Preview
-
-        /// <summary>
-        /// Handles the Click event of the btnPreview control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnPreview_Click( object sender, EventArgs e )
+        protected void ddlVersions_SelectedIndexChanged( object sender, EventArgs e )
         {
-            lPreTextPreview.Text = GetAttributeValue( "PreText" );
-            lHtmlContentPreview.Text = edtHtml.Text;
-            lPostTextPreview.Text = GetAttributeValue( "PostText" );
-
-            mdPreview.Show();
+            // TODO
         }
-
-        #endregion
-        protected void btnShowVersionGrid_Click( object sender, EventArgs e )
-        {
-
-        }
-}
+    }
 }
 
