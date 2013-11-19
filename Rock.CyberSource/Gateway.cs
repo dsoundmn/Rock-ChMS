@@ -311,6 +311,7 @@ namespace Rock.CyberSource
         {
             errorMessage = string.Empty;
             RequestMessage request = GetMerchantInfo();
+            request.billTo = GetBillTo( transaction );  
             request.paySubscriptionCreateService = new PaySubscriptionCreateService();
             request.paySubscriptionCreateService.run = "true";
             request.paySubscriptionCreateService.paymentRequestID = transaction.TransactionCode;
@@ -554,6 +555,24 @@ namespace Rock.CyberSource
                 billingInfo.state = cc.BillingState.Left( 2 );
                 billingInfo.postalCode = cc.BillingZip.Left( 10 );
             }
+
+            return billingInfo;
+        }
+
+        /// <summary>
+        /// Gets the bill to.
+        /// </summary>
+        /// <param name="transaction">The transaction.</param>
+        /// <returns></returns>
+        private BillTo GetBillTo( FinancialTransaction transaction )
+        {
+            BillTo billingInfo = new BillTo();
+            billingInfo.customerID = transaction.AuthorizedPerson.Id.ToString();
+            billingInfo.firstName = transaction.AuthorizedPerson.FirstName.Left(50);       // up to 50 chars
+            billingInfo.lastName = transaction.AuthorizedPerson.LastName.Left( 50 );       // up to 60 chars
+            billingInfo.email = transaction.AuthorizedPerson.Email.Left(255);              // up to 255 chars
+            billingInfo.ipAddress = Dns.GetHostEntry( Dns.GetHostName() )
+                .AddressList.FirstOrDefault( ip => ip.AddressFamily == AddressFamily.InterNetwork ).ToString();
 
             return billingInfo;
         }
