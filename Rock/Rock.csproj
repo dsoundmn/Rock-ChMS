@@ -339,6 +339,10 @@
     <Compile Include="Migrations\201311191803239_AddLocationTypeBack.Designer.cs">
       <DependentUpon>201311191803239_AddLocationTypeBack.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201311200559318_HtmlContentLastModified.cs" />
+    <Compile Include="Migrations\201311200559318_HtmlContentLastModified.Designer.cs">
+      <DependentUpon>201311200559318_HtmlContentLastModified.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1271,6 +1275,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201311191803239_AddLocationTypeBack.resx">
       <DependentUpon>201311191803239_AddLocationTypeBack.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311200559318_HtmlContentLastModified.resx">
+      <DependentUpon>201311200559318_HtmlContentLastModified.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

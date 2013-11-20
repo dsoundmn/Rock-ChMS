@@ -14,6 +14,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Cms
@@ -38,7 +39,10 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            ShowView();
+            if ( !this.IsPostBack )
+            {
+                ShowView();
+            }
         }
 
         #endregion
@@ -81,13 +85,14 @@ namespace RockWeb.Blocks.Cms
         protected void btnEdit_Click( object sender, EventArgs e )
         {
             pnlEdit.Visible = true;
+            pnlVersionGrid.Visible = false;
             mdEdit.Show();
 
             string entityValue = EntityValue();
             Rock.Model.HtmlContent content = new HtmlContentService().GetActiveContent( CurrentBlock.Id, entityValue );
             edtHtml.Text = content != null ? content.Content : string.Empty;
-
-            LoadDropDowns();
+            edtHtml.MergeFields.Clear();
+            edtHtml.MergeFields.Add( "GlobalAttribute" );
         }
 
         #endregion
@@ -99,7 +104,9 @@ namespace RockWeb.Blocks.Cms
         /// </summary>
         protected void ShowView()
         {
+            mdEdit.Hide();
             pnlEdit.Visible = false;
+            pnlVersionGrid.Visible = false;
             string entityValue = EntityValue();
             string html = string.Empty;
 
@@ -112,7 +119,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( content != null )
                 {
-                    html = content.Content;
+                    html = content.Content.ResolveMergeFields( GetGlobalMergeFields() );
                 }
                 else
                 {
@@ -144,55 +151,39 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Binds the grid.
         /// </summary>
-        private void LoadDropDowns()
+        private void BindGrid()
         {
-            var HtmlService = new HtmlContentService();
-            var content = HtmlService.GetContent( CurrentBlock.Id, EntityValue() );
-
-            var personService = new Rock.Model.PersonService();
-            var versionAudits = new Dictionary<int, Rock.Model.Audit>();
-            var modifiedPersons = new Dictionary<int, string>();
-
-            foreach ( var version in content )
-            {
-                var lastAudit = HtmlService.Audits( version )
-                    .Where( a => a.AuditType == Rock.Model.AuditType.Add ||
-                        a.AuditType == Rock.Model.AuditType.Modify )
-                    .OrderByDescending( h => h.DateTime )
-                    .FirstOrDefault();
-                if ( lastAudit != null )
-                    versionAudits.Add( version.Id, lastAudit );
-            }
-
-            foreach ( var audit in versionAudits.Values )
-            {
-                if ( audit.PersonId.HasValue && !modifiedPersons.ContainsKey( audit.PersonId.Value ) )
-                {
-                    var modifiedPerson = personService.Get( audit.PersonId.Value, true );
-                    modifiedPersons.Add( audit.PersonId.Value, modifiedPerson != null ? modifiedPerson.FullName : string.Empty );
-                }
-            }
+            var htmlContentService = new HtmlContentService();
+            var content = htmlContentService.GetContent( CurrentBlock.Id, EntityValue() );
 
             var versions = content.
                 Select( v => new
                 {
                     v.Id,
                     v.Version,
+                    VersionText = "Version " + v.Version.ToString(),
                     v.Content,
-                    ModifiedDateTime = versionAudits.ContainsKey( v.Id ) ? versionAudits[v.Id].DateTime.ToElapsedString() : string.Empty,
-                    ModifiedByPerson = versionAudits.ContainsKey( v.Id ) && versionAudits[v.Id].PersonId.HasValue ? modifiedPersons[versionAudits[v.Id].PersonId.Value] : string.Empty,
+                    ModifiedDateTime = v.LastModifiedDateTime.ToElapsedString(),
+                    ModifiedByPerson = v.LastModifiedPerson,
                     Approved = v.IsApproved,
-                    ApprovedByPerson = v.ApprovedByPerson != null ? v.ApprovedByPerson.FullName : "",
+                    ApprovedByPerson = v.ApprovedByPerson,
                     v.StartDateTime,
                     v.ExpireDateTime
                 } ).ToList();
 
-            ddlVersions.Items.Clear();
-            ddlVersions.Items.Add( new ListItem( "Latest", "0" ) );
-            foreach (var version in versions)
-            {
-                ddlVersions.Items.Add( new ListItem( string.Format( "Version {0} - {1} ", version.Version, version.ModifiedDateTime ), version.Id.ToString() ) );
-            }
+            gVersions.DataSource = versions;
+            gVersions.GridRebind += gVersions_GridRebind;
+            gVersions.DataBind();
+        }
+
+        /// <summary>
+        /// Handles the GridRebind event of the gVersions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gVersions_GridRebind( object sender, EventArgs e )
+        {
+            BindGrid();
         }
 
         /// <summary>
@@ -218,6 +209,31 @@ namespace RockWeb.Blocks.Cms
             return entityValue;
         }
 
+        /// <summary>
+        /// Gets the global merge fields.
+        /// </summary>
+        /// <returns></returns>
+        public Dictionary<string, object> GetGlobalMergeFields()
+        {
+            var configValues = new Dictionary<string, object>();
+
+            var globalAttributeValues = new Dictionary<string, object>();
+            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+            foreach ( var attribute in globalAttributes.AttributeKeys.OrderBy( a => a.Value ) )
+            {
+                var attributeCache = AttributeCache.Read( attribute.Key );
+                if ( attributeCache.IsAuthorized( "View", null ) )
+                {
+                    globalAttributeValues.Add( attributeCache.Key,
+                        attributeCache.FieldType.Field.FormatValue( this, globalAttributes.AttributeValues[attributeCache.Key].Value, attributeCache.QualifierValues, false ) );
+                }
+            }
+
+            configValues.Add( "GlobalAttribute", globalAttributeValues );
+
+            return configValues;
+        }
+
         #endregion
 
         #region Edit
@@ -229,7 +245,83 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            bool supportVersioning = GetAttributeValue( "SupportVersions" ).AsBoolean();
+            bool requireApproval = GetAttributeValue( "RequireApproval" ).AsBoolean();
+            
+            Rock.Model.HtmlContent content = null;
+            HtmlContentService service = new HtmlContentService();
 
+            // get settings
+            string entityValue = EntityValue();
+
+            // get current  content
+            int version = hfVersion.ValueAsInt(); ;
+            content = service.GetByBlockIdAndEntityValueAndVersion( CurrentBlock.Id, entityValue, version );
+
+            // if the existing content changed, and the overwrite option was not checked, create a new version
+            if ( content != null && supportVersioning && content.Content != edtHtml.Text && !cbOverwriteVersion.Checked )
+            {
+                content = null;
+            }
+
+            // if a record doesn't exist then create one
+            if ( content == null )
+            {
+                content = new Rock.Model.HtmlContent();
+                content.BlockId = CurrentBlock.Id;
+                content.EntityValue = entityValue;
+
+                if ( supportVersioning )
+                {
+                    int? maxVersion = service.Queryable()
+                        .Where( c => c.BlockId == CurrentBlock.Id && c.EntityValue == entityValue )
+                        .Select( c => (int?)c.Version ).Max();
+
+                    content.Version = maxVersion.HasValue ? maxVersion.Value + 1 : 1;
+                }
+                else
+                {
+                    content.Version = 0;
+                }
+
+                service.Add( content, CurrentPersonId );
+            }
+
+            if ( supportVersioning )
+            {
+                content.StartDateTime = pDateRange.LowerValue;
+                content.ExpireDateTime = pDateRange.UpperValue;
+            }
+            else
+            {
+                content.StartDateTime = null;
+                content.ExpireDateTime = null;
+            }
+
+            if ( !requireApproval || IsUserAuthorized( "Approve" ) )
+            {
+                content.IsApproved = !requireApproval || chkApproved.Checked;
+                if ( content.IsApproved )
+                {
+                    content.ApprovedByPersonId = CurrentPersonId;
+                    content.ApprovedDateTime = DateTime.Now;
+                }
+            }
+
+            content.Content = edtHtml.Text;
+            content.LastModifiedPersonId = this.CurrentPersonId;
+            content.LastModifiedDateTime = DateTime.Now;
+
+            if ( service.Save( content, CurrentPersonId ) )
+            {
+                // flush cache content 
+                this.FlushCacheItem( entityValue );
+                ShowView();
+            }
+            else
+            {
+                // TODO: service.ErrorMessages;
+            }
         }
 
         /// <summary>
@@ -239,14 +331,37 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-
+            ShowView();
         }
 
         #endregion
 
-        protected void ddlVersions_SelectedIndexChanged( object sender, EventArgs e )
+        protected void SelectVersion_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
             // TODO
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnShowVersionGrid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnShowVersionGrid_Click( object sender, EventArgs e )
+        {
+            BindGrid();
+            pnlVersionGrid.Visible = true;
+            pnlEdit.Visible = false;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnReturnToEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnReturnToEdit_Click( object sender, EventArgs e )
+        {
+            pnlVersionGrid.Visible = false;
+            pnlEdit.Visible = true;
         }
     }
 }
