@@ -256,7 +256,7 @@ namespace Rock.CyberSource
             if ( verifyReply.reasonCode.Equals("100") )
             {
                 transaction.IsActive = verifyReply.paySubscriptionRetrieveReply.status.ToUpper() == "CURRENT";
-                var startDate = GetDate( verifyReply.paySubscriptionRetrieveReply.startDate, verifyReply.paySubscriptionRetrieveReply.frequency );
+                var startDate = GetDate( verifyReply.paySubscriptionRetrieveReply.startDate );
                 transaction.StartDate = startDate ?? transaction.StartDate;
                 transaction.NextPaymentDate = NextPaymentDate( startDate, verifyReply.paySubscriptionRetrieveReply.frequency ) ?? transaction.NextPaymentDate;
                 transaction.NumberOfPayments = verifyReply.paySubscriptionRetrieveReply.totalPayments.AsInteger() ?? transaction.NumberOfPayments;
@@ -636,21 +636,6 @@ namespace Rock.CyberSource
         }
 
         /// <summary>
-        /// Gets the card from a previously saved profile.
-        /// </summary>
-        /// <param name="reply">The reply.</param>
-        /// <returns></returns>
-        //private Card GetCard( PaySubscriptionRetrieveReply reply )
-        //{
-        //    var card = new Card();
-        //    card.accountNumber = reply.cardAccountNumber;
-        //    card.expirationMonth = reply.cardExpirationMonth;
-        //    card.expirationYear = reply.cardExpirationYear;
-        //    card.cardType = reply.cardType;
-        //    return card;
-        //}
-
-        /// <summary>
         /// Gets the check information.
         /// </summary>
         /// <param name="paymentInfo">The payment information.</param>
@@ -667,24 +652,6 @@ namespace Rock.CyberSource
         }
 
         /// <summary>
-        /// Gets the check from a previously saved profile.
-        /// </summary>
-        /// <param name="reply">The reply.</param>
-        /// <returns></returns>
-        //private Check GetCheck( PaySubscriptionRetrieveReply reply )
-        //{
-        //    var check = new Check();
-        //    if ( reply != null )
-        //    {
-        //        check.accountNumber = reply.checkAccountNumber;
-        //        check.accountType = reply.checkAccountType;
-        //        check.bankTransitNumber = reply.checkBankTransitNumber;
-        //        check.secCode = reply.checkSecCode;
-        //    }
-        //    return check;
-        //}
-
-        /// <summary>
         /// Gets the recurring subscription info.
         /// </summary>
         /// <param name="schedule">The schedule.</param>
@@ -693,12 +660,11 @@ namespace Rock.CyberSource
         {
             var recurringSubscriptionInfo = new RecurringSubscriptionInfo();
             recurringSubscriptionInfo.amount = paymentInfo.Amount.ToString();
+            recurringSubscriptionInfo.startDate = schedule.StartDate.ToString( "yyyyMMdd" );
             recurringSubscriptionInfo.automaticRenew = "true";
             
             SetPayPeriod( recurringSubscriptionInfo, schedule.TransactionFrequencyValue );
-
-            recurringSubscriptionInfo.startDate = GetDate( schedule.StartDate.ToString( "yyyyMMdd" ), recurringSubscriptionInfo.frequency );
-
+                        
             return recurringSubscriptionInfo;
         }
 
@@ -712,15 +678,14 @@ namespace Rock.CyberSource
             var recurringSubscriptionInfo = new RecurringSubscriptionInfo();            
             recurringSubscriptionInfo.amount = paymentInfo.Amount.ToString();
             recurringSubscriptionInfo.subscriptionID = schedule.GatewayScheduleId;
+            recurringSubscriptionInfo.startDate = schedule.StartDate.ToString( "yyyyMMdd" );
             recurringSubscriptionInfo.automaticRenew = "true";
-
+            
             if ( schedule.TransactionFrequencyValueId > 0 )
             {
                 SetPayPeriod( recurringSubscriptionInfo, DefinedValueCache.Read( schedule.TransactionFrequencyValueId ) );
             }
-            // fix this so it returns the date in the correct format
-            recurringSubscriptionInfo.startDate = GetDate( schedule.StartDate.ToString( "yyyyMMdd" ), recurringSubscriptionInfo.frequency ).ToString( "yyyyMMdd" );
-            
+                        
             return recurringSubscriptionInfo;
         }
 
@@ -745,6 +710,17 @@ namespace Rock.CyberSource
                     recurringSubscriptionInfo.frequency = "BI-WEEKLY";
                     break;
                 case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY:
+                    // get the next 1st or the 15th, including possible cutoff dates
+                    var nextValidDate = DateTime.ParseExact( recurringSubscriptionInfo.startDate, "yyyyMMdd", null ).AddDays( -1 );
+                    if ( nextValidDate.Day >= 15 )
+                    {
+                        nextValidDate = new DateTime( nextValidDate.Year, nextValidDate.Month, 1 ).AddMonths( 1 );
+                    }
+                    else
+                    {
+                        nextValidDate = new DateTime( nextValidDate.Year, nextValidDate.Month, 15 );
+                    }                    
+                    recurringSubscriptionInfo.startDate = nextValidDate.ToString( "yyyyMMdd" );
                     recurringSubscriptionInfo.frequency = "SEMI-MONTHLY";
                     break;
                 case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY:
@@ -775,7 +751,7 @@ namespace Rock.CyberSource
                     nextDate = startDate.AddDays( 14 );
                     break;
                 case "SEMI-MONTHLY":
-                    nextDate = startDate.Day > 15 ? new DateTime( startDate.Year, startDate.Month + 1, 1 )
+                    nextDate = startDate.Day >= 15 ? new DateTime( startDate.Year, startDate.Month, 1 ).AddMonths( 1 )
                         : new DateTime( startDate.Year, startDate.Month, 15 );
                     break;
                 case "MONTHLY":
@@ -791,23 +767,17 @@ namespace Rock.CyberSource
 
             return nextDate;
         }
-        
+
         /// <summary>
         /// Gets the date.
         /// </summary>
         /// <param name="date">The date.</param>
         /// <returns></returns>
-        private DateTime? GetDate( string date, string frequency )
+        private DateTime? GetDate( string date )
         {
-            DateTime dt;
+            DateTime dt = DateTime.MinValue;
             if ( DateTime.TryParseExact( date, "yyyyMMdd", null, System.Globalization.DateTimeStyles.None, out dt ) )
             {
-                if ( frequency.ToUpper().Equals( "SEMI-MONTHLY") )
-                {
-                    dt = dt.Day > 15 ? new DateTime( dt.Year, dt.Month + 1, 1 )
-                        : new DateTime( dt.Year, dt.Month, 15 );
-                }
-
                 return dt;
             }
             else
