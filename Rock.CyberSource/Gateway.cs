@@ -81,30 +81,28 @@ namespace Rock.CyberSource
             request.item = GetItems( paymentInfo );            
             request.purchaseTotals = GetTotals( paymentInfo );
 
-            if ( paymentInfo is ReferencePaymentInfo )
-            {
-                var reference = paymentInfo as ReferencePaymentInfo;
-                request.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
-                request.recurringSubscriptionInfo.subscriptionID = reference.ReferenceNumber;
-            }
-            else if ( paymentInfo is CreditCardPaymentInfo )
+            if ( paymentInfo is CreditCardPaymentInfo )
             {   
                 var cc = paymentInfo as CreditCardPaymentInfo;
                 request.card = GetCard( cc );
-           
             }            
             else if ( paymentInfo is ACHPaymentInfo )
             {   
                 var ach = paymentInfo as ACHPaymentInfo;
                 request.check = GetCheck( ach );
             }
+            else if ( paymentInfo is ReferencePaymentInfo )
+            {
+                var reference = paymentInfo as ReferencePaymentInfo;
+                request.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
+                request.recurringSubscriptionInfo.subscriptionID = reference.ReferenceNumber;
+            }            
             else 
             {
                 errorMessage = "Payment type not implemented.";
                 return null;
             }
             
-            // Request appropriate services
             if ( paymentInfo.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
             {
                 request.ccAuthService = new CCAuthService();
@@ -123,23 +121,16 @@ namespace Rock.CyberSource
             ReplyMessage reply = SubmitTransaction( request );
             if ( reply != null )
             {
-                int? reasonCode = reply.reasonCode.AsInteger();
-                if ( reasonCode != null )
+                if ( reply.reasonCode.Equals( "100" ) )
                 {
-                    if ( reasonCode == 100 )
-                    {
-                        var transaction = new FinancialTransaction();
-                        transaction.TransactionCode = reply.requestID;
-                        return transaction;
-                    }
-                    else
-                    {
-                        errorMessage = string.Format( "Your order was not approved.{0}", ProcessError( reply ) );
-                    }
+                    var transactionGuid = new Guid( reply.merchantReferenceCode );
+                    var transaction = new FinancialTransaction { Guid = transactionGuid };
+                    transaction.TransactionCode = reply.requestID;
+                    return transaction;
                 }
                 else
                 {
-                    errorMessage = "Invalid transaction response from the financial gateway";
+                    errorMessage = string.Format( "Your order was not approved.{0}", ProcessError( reply ) );
                 }                
             }
             else
@@ -162,59 +153,55 @@ namespace Rock.CyberSource
             errorMessage = string.Empty;
             RequestMessage request = GetMerchantInfo();
             request.billTo = GetBillTo( paymentInfo );
+            request.item = GetItems( paymentInfo );
             request.purchaseTotals = GetTotals( paymentInfo );
             request.recurringSubscriptionInfo = GetRecurring( schedule, paymentInfo );
-
             request.paySubscriptionCreateService = new PaySubscriptionCreateService();
             request.paySubscriptionCreateService.run = "true";
 
-            request.merchantReferenceCode = new Guid().ToString();
-
-            if ( paymentInfo is CreditCardPaymentInfo ) 
+            if ( paymentInfo is CreditCardPaymentInfo )
             {
                 var cc = paymentInfo as CreditCardPaymentInfo;
                 request.card = GetCard( cc );
-                request.ccAuthService = new CCAuthService();
-                request.ccAuthService.run = "true";                         
-                request.subscription.paymentMethod = "credit card";                
             }
             else if ( paymentInfo is ACHPaymentInfo )
             {
                 var ach = paymentInfo as ACHPaymentInfo;
                 request.check = GetCheck( ach );
-                request.ecAuthenticateService = new ECAuthenticateService();
-                request.ecAuthenticateService.run = "true";
-                request.subscription.paymentMethod = "check";
             }
             else if ( paymentInfo is ReferencePaymentInfo )
             {
                 var reference = paymentInfo as ReferencePaymentInfo;
-                request.paySubscriptionCreateService.paymentRequestID = reference.ReferenceNumber;
-                // charge the reference number
+                var test = reference.ReferenceNumber;
+                request.paySubscriptionCreateService.paymentRequestID = reference.TransactionCode;                
+            }
+            else
+            {
+                errorMessage = "Payment type not implemented.";
+                return null;
             }
 
+            if ( !paymentInfo.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
+            {
+                request.subscription = new Subscription();
+                request.subscription.paymentMethod = "check";
+            }
+                                  
             ReplyMessage reply = SubmitTransaction( request );
             if ( reply != null )
-            {
-                int? reasonCode = reply.reasonCode.AsInteger();
-                if ( reasonCode != null )
+            {   
+                if ( reply.reasonCode.Equals( "100" ) )
                 {
-                    if ( reasonCode == 100 )
-                    {
-                        var scheduledTransaction = new FinancialScheduledTransaction();
-                        scheduledTransaction.TransactionCode = reply.requestID;
-                        scheduledTransaction.GatewayScheduleId = reply.paySubscriptionCreateReply.subscriptionID;
-                        GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
-                        return scheduledTransaction;
-                    }
-                    else
-                    {
-                        errorMessage = string.Format( "Your order was not approved.{0}", ProcessError( reply ) );
-                    }
+                    var transactionGuid = new Guid ( reply.merchantReferenceCode );
+                    var scheduledTransaction = new FinancialScheduledTransaction{ Guid = transactionGuid };
+                    scheduledTransaction.TransactionCode = reply.paySubscriptionCreateReply.subscriptionID;
+                        
+                    GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
+                    return scheduledTransaction;
                 }
                 else
                 {
-                    errorMessage = "Invalid transaction response from the financial gateway";
+                    errorMessage = string.Format( "Your order was not approved.{0}", ProcessError( reply ) );
                 }
             }
             else
@@ -258,33 +245,29 @@ namespace Rock.CyberSource
         /// <returns></returns>
         public override bool GetScheduledPaymentStatus( FinancialScheduledTransaction transaction, out string errorMessage )
         {
-            
-            //RequestMessage verifyRequest = GetMerchantInfo();
-            //verifyRequest.paySubscriptionRetrieveService = new PaySubscriptionRetrieveService();
-            //verifyRequest.paySubscriptionRetrieveService.run = "true";
-            //verifyRequest.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
-            //verifyRequest.recurringSubscriptionInfo.subscriptionID = reference.ReferenceNumber;
-            //ReplyMessage verifyReply = SubmitTransaction( verifyRequest );
-            
-
-            //if ( verifyReply.reasonCode == "100" )
-            //{
-            //    if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
-            //    {
-            //        request.card = GetCard( verifyReply.paySubscriptionRetrieveReply );
-            //    }
-            //    else
-            //    {
-            //        request.check = GetCheck( verifyReply.paySubscriptionRetrieveReply );
-            //    }
-            //}
-            //else
-            //{
-            //    errorMessage = ProcessError( verifyReply );
-            //    return null;
-            //}
-
             errorMessage = string.Empty;
+            RequestMessage verifyRequest = GetMerchantInfo();
+            verifyRequest.paySubscriptionRetrieveService = new PaySubscriptionRetrieveService();
+            verifyRequest.paySubscriptionRetrieveService.run = "true";
+            verifyRequest.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
+            verifyRequest.recurringSubscriptionInfo.subscriptionID = transaction.TransactionCode;
+            ReplyMessage verifyReply = SubmitTransaction( verifyRequest );
+            var status = verifyReply.paySubscriptionRetrieveReply.status;
+            if ( verifyReply.reasonCode.Equals("100") )
+            {
+                transaction.IsActive = verifyReply.paySubscriptionRetrieveReply.status.ToUpper() == "CURRENT";
+                var startDate = GetDate( verifyReply.paySubscriptionRetrieveReply.startDate, verifyReply.paySubscriptionRetrieveReply.frequency );
+                transaction.StartDate = startDate ?? transaction.StartDate;
+                transaction.NextPaymentDate = NextPaymentDate( startDate, verifyReply.paySubscriptionRetrieveReply.frequency ) ?? transaction.NextPaymentDate;
+                transaction.NumberOfPayments = verifyReply.paySubscriptionRetrieveReply.totalPayments.AsInteger() ?? transaction.NumberOfPayments;
+                transaction.LastStatusUpdateDateTime = DateTime.Now;
+                return true;
+            }
+            else
+            {
+                errorMessage = ProcessError( verifyReply );
+            }
+            
             return false;
         }
 
@@ -311,13 +294,14 @@ namespace Rock.CyberSource
         {
             errorMessage = string.Empty;
             RequestMessage request = GetMerchantInfo();
-            request.billTo = GetBillTo( transaction );  
-            request.paySubscriptionCreateService = new PaySubscriptionCreateService();
-            request.paySubscriptionCreateService.run = "true";
-            request.paySubscriptionCreateService.paymentRequestID = transaction.TransactionCode;
+            request.billTo = GetBillTo( transaction );
             request.recurringSubscriptionInfo = new RecurringSubscriptionInfo();
             request.recurringSubscriptionInfo.frequency = "ON-DEMAND";
             request.recurringSubscriptionInfo.amount = "0";
+            request.paySubscriptionCreateService = new PaySubscriptionCreateService();
+            request.paySubscriptionCreateService.run = "true";
+            request.paySubscriptionCreateService.paymentRequestID = transaction.TransactionCode;
+
             ReplyMessage reply = SubmitTransaction( request );
             if ( reply.reasonCode == "100" )
             {
@@ -708,11 +692,12 @@ namespace Rock.CyberSource
         private RecurringSubscriptionInfo GetRecurring( PaymentSchedule schedule, PaymentInfo paymentInfo )
         {
             var recurringSubscriptionInfo = new RecurringSubscriptionInfo();
-            recurringSubscriptionInfo.startDate = schedule.StartDate.ToString( "YYYYMMDD" );
             recurringSubscriptionInfo.amount = paymentInfo.Amount.ToString();
-            recurringSubscriptionInfo.automaticRenew = "true";            
+            recurringSubscriptionInfo.automaticRenew = "true";
             
             SetPayPeriod( recurringSubscriptionInfo, schedule.TransactionFrequencyValue );
+
+            recurringSubscriptionInfo.startDate = GetDate( schedule.StartDate.ToString( "yyyyMMdd" ), recurringSubscriptionInfo.frequency );
 
             return recurringSubscriptionInfo;
         }
@@ -724,8 +709,7 @@ namespace Rock.CyberSource
         /// <returns></returns>
         private RecurringSubscriptionInfo GetRecurring( FinancialScheduledTransaction schedule, PaymentInfo paymentInfo )
         {
-            var recurringSubscriptionInfo = new RecurringSubscriptionInfo();
-            recurringSubscriptionInfo.startDate = schedule.StartDate.ToString( "YYYYMMDD" );
+            var recurringSubscriptionInfo = new RecurringSubscriptionInfo();            
             recurringSubscriptionInfo.amount = paymentInfo.Amount.ToString();
             recurringSubscriptionInfo.subscriptionID = schedule.GatewayScheduleId;
             recurringSubscriptionInfo.automaticRenew = "true";
@@ -734,7 +718,9 @@ namespace Rock.CyberSource
             {
                 SetPayPeriod( recurringSubscriptionInfo, DefinedValueCache.Read( schedule.TransactionFrequencyValueId ) );
             }
-
+            // fix this so it returns the date in the correct format
+            recurringSubscriptionInfo.startDate = GetDate( schedule.StartDate.ToString( "yyyyMMdd" ), recurringSubscriptionInfo.frequency ).ToString( "yyyyMMdd" );
+            
             return recurringSubscriptionInfo;
         }
 
@@ -771,15 +757,57 @@ namespace Rock.CyberSource
         }
 
         /// <summary>
+        /// Gets the next payment date.
+        /// </summary>
+        /// <param name="date">The date.</param>
+        /// <param name="frequency">The frequency.</param>
+        /// <returns></returns>
+        private DateTime? NextPaymentDate( DateTime? dt, string frequency )
+        {
+            DateTime startDate = (DateTime)(dt ?? DateTime.Now);
+            DateTime nextDate;
+            switch ( frequency.ToUpper() )
+            {
+                case "WEEKLY":
+                    nextDate = startDate.AddDays( 7 );
+                    break;
+                case "BI-WEEKLY":
+                    nextDate = startDate.AddDays( 14 );
+                    break;
+                case "SEMI-MONTHLY":
+                    nextDate = startDate.Day > 15 ? new DateTime( startDate.Year, startDate.Month + 1, 1 )
+                        : new DateTime( startDate.Year, startDate.Month, 15 );
+                    break;
+                case "MONTHLY":
+                    nextDate = startDate.AddMonths( 1 );
+                    break;
+                case "ANNUALLY":
+                    nextDate = startDate.AddYears( 1 );
+                    break;
+                default:
+                    nextDate = startDate;
+                    break;
+            }            
+
+            return nextDate;
+        }
+        
+        /// <summary>
         /// Gets the date.
         /// </summary>
         /// <param name="date">The date.</param>
         /// <returns></returns>
-        private DateTime? GetDate( string date )
+        private DateTime? GetDate( string date, string frequency )
         {
-            DateTime dt = DateTime.MinValue;
-            if ( DateTime.TryParseExact( date, "MMddyyyy", null, System.Globalization.DateTimeStyles.None, out dt ) )
+            DateTime dt;
+            if ( DateTime.TryParseExact( date, "yyyyMMdd", null, System.Globalization.DateTimeStyles.None, out dt ) )
             {
+                if ( frequency.ToUpper().Equals( "SEMI-MONTHLY") )
+                {
+                    dt = dt.Day > 15 ? new DateTime( dt.Year, dt.Month + 1, 1 )
+                        : new DateTime( dt.Year, dt.Month, 15 );
+                }
+
                 return dt;
             }
             else
