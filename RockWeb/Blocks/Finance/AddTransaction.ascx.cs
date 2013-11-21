@@ -153,7 +153,7 @@ achieve our mission.  We are so grateful for your commitment.
         
         #endregion
 
-        #region overridden control methods
+        #region Control Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -653,7 +653,7 @@ achieve our mission.  We are so grateful for your commitment.
                         GatewayComponent gateway = hfPaymentTab.Value == "ACH" ? _achGateway : _ccGateway;
                         string errorMessage = string.Empty;
                         string referenceNumber = gateway.GetReferenceNumber( transaction, out errorMessage );
-                        if (errorMessage.Any())
+                        if ( errorMessage.Any() )
                         {
                             nbSaveAccount.Title = "Invalid Transaction";
                             nbSaveAccount.Text = "Sorry, the account information cannot be saved. " + errorMessage;
@@ -1276,6 +1276,7 @@ achieve our mission.  We are so grateful for your commitment.
                     {
                         scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
                         scheduledTransaction.AuthorizedPersonId = person.Id;
+                        scheduledTransaction.GatewayEntityTypeId = gateway.TypeId;
 
                         foreach ( var account in SelectedAccounts.Where( a => a.Amount > 0 ) )
                         {
